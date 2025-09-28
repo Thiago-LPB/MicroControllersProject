@@ -1,0 +1,39 @@
+<ASSEMBLER_INFO>
+ <VERSION>2.2.8</VERSION>
+ <DEVICE>"ATmega328P"</DEVICE>
+ <WORKING_DIR>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\Debug</WORKING_DIR>
+ <INCLUDE_PATH>
+  <DIR>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc</DIR>
+  <DIR>C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avrassembler\Include</DIR>
+  <DIR></DIR>
+ </INCLUDE_PATH>
+ <SOURCE_FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</SOURCE_FILE>
+ <INCLUDED_FILES>
+  <FILE>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328Pdef.inc</FILE>
+ </INCLUDED_FILES>
+ <OBJECT_FILES>
+  <FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\Debug\Semaforo.obj</FILE>
+ </OBJECT_FILES>
+ <HEX_FILES>
+  <FILE>Semaforo.hex</FILE>
+ </HEX_FILES>
+ <OUTPUT_FILES>
+  <FILE>Semaforo.map</FILE>
+  <FILE>Semaforo.lss</FILE>
+ </OUTPUT_FILES>
+ <LABELS>
+  <reset><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>12</LINE></reset>
+  <timer1_isr><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>56</LINE></timer1_isr>
+  <main_lp><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>50</LINE></main_lp>
+  <multiplex><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>69</LINE></multiplex>
+  <continue_timer><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>63</LINE></continue_timer>
+  <semaforo><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>90</LINE></semaforo>
+  <delay5ms><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>130</LINE></delay5ms>
+  <luz_vermelha><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>106</LINE></luz_vermelha>
+  <luz_amarela><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>112</LINE></luz_amarela>
+  <luz_verde><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>118</LINE></luz_verde>
+  <fim_semaforo><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>124</LINE></fim_semaforo>
+  <d5_loop1><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>132</LINE></d5_loop1>
+  <d5_loop2><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>134</LINE></d5_loop2>
+ </LABELS>
+</ASSEMBLER_INFO>
