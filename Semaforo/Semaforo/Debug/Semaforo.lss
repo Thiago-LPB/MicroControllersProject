@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.2.8  c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm Sun Sep 28 19:27:13 2025
+AVRASM ver. 2.2.8  c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm Mon Sep 29 05:54:41 2025
 
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328Pdef.inc'
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328Pdef.inc'
@@ -985,15 +985,34 @@ AVRASM ver. 2.2.8  c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\
                                  
                                  ; ***** END OF FILE ******************************************************
                                  
-                                 .def count = r17   ; unidade
-                                 .def tens  = r18   ; dezena
+                                 .def count = r17			; unidade
+                                 .def tens  = r18			; dezena
                                  
                                  .cseg
                                  .org 0x0000
 000000 c016                          rjmp reset
                                  .org 0x0016
-000016 c01b                          rjmp timer1_isr    ; vetor Timer1 Compare A
+000016 c0be                          rjmp timer1_isr    ; vetor Timer1 Compare A
                                  
+                                 ;----------------------------------------
+                                 ; Memória SRAM para semáforos
+                                 ;----------------------------------------
+                                 .dseg
+000100                           fase_praia: .byte 1
+000101                           tempo_praia: .byte 1
+                                 
+000102                           fase_esqjati: .byte 1
+000103                           tempo_esqjati: .byte 1
+                                 
+000104                           fase_dirjati: .byte 1
+000105                           tempo_dirjati: .byte 1
+                                 
+000106                           fase_paju: .byte 1
+000107                           tempo_paju: .byte 1
+                                 
+000108                           flag_atualizar_serial: .byte 1  ; flag para enviar status
+                                 
+                                 .cseg
                                  ;----------------------------------------
                                  reset:
                                      ; Inicializa stack
@@ -1002,127 +1021,598 @@ AVRASM ver. 2.2.8  c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\
 000019 e008                          ldi temp, high(RAMEND)
 00001a bf0e                          out SPH, temp
                                  
+                                     ; Configura UART (9600 baud @ 16MHz)
+00001b d03b                          rcall uart_init
+                                 
                                      ; Configura PORTC C0–C3 como saída (BCD)
-00001b e00f                          ldi temp, 0x0F
-00001c b907                          out DDRC, temp
+00001c e00f                          ldi temp, 0x0F
+00001d b907                          out DDRC, temp
                                  
                                      ; Configura PORTB0 e PORTB1 como saída (TIP122)
-00001d e10f                          ldi temp, (1<<PB0)|(1<<PB1)|(1<<PB2)|(1<<PB3)|(1<<PB4)
-00001e b904                          out DDRB, temp
+00001e ef0f                          ldi temp, (1<<PB0)|(1<<PB1)|(1<<PB2)|(1<<PB3)|(1<<PB4)|(1<<PB5)|(1<<PB6)|(1<<PB7)
+00001f b904                          out DDRB, temp
                                  
-                                     ; Inicializa contador: 99
-00001f e019                          ldi count, 9
-000020 e029                          ldi tens, 9
+000020 ef0c                      	ldi temp, (1<<PD2)|(1<<PD3)|(1<<PD4)|(1<<PD5)|(1<<PD6)|(1<<PD7)
+000021 b90a                      	out DDRD, temp
+                                 
+                                 	; Inicia semáforos todos no vermelho
+000022 e000                      	ldi temp, 0
+000023 9300 0100                 	sts fase_praia, temp
+000025 e50f                      	ldi temp, 95
+000026 9300 0101                 	sts tempo_praia, temp
+                                 
+000028 e000                      	ldi temp, 0
+000029 9300 0102                 	sts fase_esqjati, temp
+00002b e005                      	ldi temp, 5
+00002c 9300 0103                 	sts tempo_esqjati, temp
+                                 
+00002e e000                      	ldi temp, 0
+00002f 9300 0104                 	sts fase_dirjati, temp
+000031 e005                      	ldi temp, 5
+000032 9300 0105                 	sts tempo_dirjati, temp
+                                 
+000034 e000                      	ldi temp, 0
+000035 9300 0106                 	sts fase_paju, temp
+000037 e10f                      	ldi temp, 31
+000038 9300 0107                 	sts tempo_paju, temp
+                                 
+00003a e000                          ldi temp, 0
+00003b 9300 0108                     sts flag_atualizar_serial, temp
                                  
                                      ; Configura Timer1 para 1 Hz (CTC)
-000021 e008                          ldi temp, (1<<WGM12)
-000022 9300 0081                     sts TCCR1B, temp
+00003d e008                          ldi temp, (1<<WGM12)
+00003e 9300 0081                     sts TCCR1B, temp
                                  
-000024 e30d                          ldi temp, high(15624)   ; para 1 Hz @ 16MHz / 1024
-000025 9300 0089                     sts OCR1AH, temp
-000027 e008                          ldi temp, low(15624)
-000028 9300 0088                     sts OCR1AL, temp
+000040 e30d                          ldi temp, high(15624)
+000041 9300 0089                     sts OCR1AH, temp
+000043 e008                          ldi temp, low(15624)
+000044 9300 0088                     sts OCR1AL, temp
                                  
-                                     ; Prescaler 1024
-00002a e00d                          ldi temp, (1<<CS12)|(1<<CS10)|(1<<WGM12)
-00002b 9300 0081                     sts TCCR1B, temp
+000046 e00d                          ldi temp, (1<<CS12)|(1<<CS10)|(1<<WGM12)
+000047 9300 0081                     sts TCCR1B, temp
                                  
-                                     ; Habilita interrupção Compare A
-00002d e002                          ldi temp, (1<<OCIE1A)
-00002e 9300 006f                     sts TIMSK1, temp
+000049 e002                          ldi temp, (1<<OCIE1A)
+00004a 9300 006f                     sts TIMSK1, temp
                                  
-000030 9478                          sei     ; habilita interrupções globais
+00004c 9478                          sei
                                  
                                  main_lp:
-000031 c007                          rjmp multiplex   ; loop principal chama multiplexação
+                                     ; Verifica se precisa enviar status
+00004d 9100 0108                     lds temp, flag_atualizar_serial
+00004f 3001                          cpi temp, 1
+000050 f421                          brne continua_main
+000051 d028                          rcall enviar_status_serial
+000052 e000                          ldi temp, 0
+000053 9300 0108                     sts flag_atualizar_serial, temp
+                                 
+                                 continua_main:
+000055 d128                          rcall multiplex
+000056 cff6                          rjmp main_lp
                                  
                                  ;----------------------------------------
-                                 ; ISR Timer1 Compare A - decrementa contador
+                                 ; Inicializa UART - 9600 baud @ 16MHz
+                                 ;----------------------------------------
+                                 uart_init:
+                                     ; UBRR = 103 para 9600 baud @ 16MHz
+000057 e000                          ldi temp, 0
+000058 9300 00c5                     sts UBRR0H, temp
+00005a e607                          ldi temp, 103
+00005b 9300 00c4                     sts UBRR0L, temp
+                                     
+                                     ; Habilita transmissão
+00005d e008                          ldi temp, (1<<TXEN0)
+00005e 9300 00c1                     sts UCSR0B, temp
+                                     
+                                     ; 8 bits, 1 stop bit, sem paridade
+000060 e006                          ldi temp, (1<<UCSZ01)|(1<<UCSZ00)
+000061 9300 00c2                     sts UCSR0C, temp
+000063 9508                          ret
+                                 
+                                 ;----------------------------------------
+                                 ; Transmite um byte via UART
+                                 ;----------------------------------------
+                                 uart_transmit:
+000064 933f                          push r19
+                                 uart_wait:
+000065 9130 00c0                     lds r19, UCSR0A
+000067 ff35                          sbrs r19, UDRE0
+000068 cffc                          rjmp uart_wait
+000069 9300 00c6                     sts UDR0, temp
+00006b 913f                          pop r19
+00006c 9508                          ret
+                                 
+                                 ;----------------------------------------
+                                 ; Envia string via UART (Z aponta para string na flash)
+                                 ;----------------------------------------
+                                 uart_send_string:
+00006d 933f                          push r19
+00006e 93ef                          push ZL
+00006f 93ff                          push ZH
+                                 uart_str_loop:
+000070 9135                          lpm r19, Z+
+000071 3030                          cpi r19, 0
+000072 f019                          breq uart_str_end
+000073 2f03                          mov temp, r19
+000074 dfef                          rcall uart_transmit
+000075 cffa                          rjmp uart_str_loop
+                                 uart_str_end:
+000076 91ff                          pop ZH
+000077 91ef                          pop ZL
+000078 913f                          pop r19
+000079 9508                          ret
+                                 
+                                 ;----------------------------------------
+                                 ; Envia status de todos os semáforos
+                                 ;----------------------------------------
+                                 enviar_status_serial:
+00007a 93ef                          push ZL
+00007b 93ff                          push ZH
+                                     
+                                     ; Cabeçalho
+00007c e6e6                          ldi ZL, low(2*msg_inicio)
+00007d e0f1                          ldi ZH, high(2*msg_inicio)
+00007e dfee                          rcall uart_send_string
+                                     
+                                     ; Semáforo Praia
+00007f e7e0                          ldi ZL, low(2*msg_praia)
+000080 e0f1                          ldi ZH, high(2*msg_praia)
+000081 dfeb                          rcall uart_send_string
+000082 9100 0100                     lds temp, fase_praia
+000084 d019                          rcall enviar_cor_semaforo
+                                     
+                                     ; Semáforo Esquerdo Jatiuca
+000085 e7e8                          ldi ZL, low(2*msg_esqjati)
+000086 e0f1                          ldi ZH, high(2*msg_esqjati)
+000087 dfe5                          rcall uart_send_string
+000088 9100 0102                     lds temp, fase_esqjati
+00008a d013                          rcall enviar_cor_semaforo
+                                     
+                                     ; Semáforo Direito Jatiuca
+00008b e8e0                          ldi ZL, low(2*msg_dirjati)
+00008c e0f1                          ldi ZH, high(2*msg_dirjati)
+00008d dfdf                          rcall uart_send_string
+00008e 9100 0104                     lds temp, fase_dirjati
+000090 d00d                          rcall enviar_cor_semaforo
+                                     
+                                     ; Semáforo Pajuçara
+000091 e8e8                          ldi ZL, low(2*msg_paju)
+000092 e0f1                          ldi ZH, high(2*msg_paju)
+000093 dfd9                          rcall uart_send_string
+000094 9100 0106                     lds temp, fase_paju
+000096 d007                          rcall enviar_cor_semaforo
+                                     
+                                     ; Nova linha
+000097 e00d                          ldi temp, 13
+000098 dfcb                          rcall uart_transmit
+000099 e00a                          ldi temp, 10
+00009a dfc9                          rcall uart_transmit
+                                     
+00009b 91ff                          pop ZH
+00009c 91ef                          pop ZL
+00009d 9508                          ret
+                                 
+                                 ;----------------------------------------
+                                 ; Envia cor do semáforo baseado na fase
+                                 ;----------------------------------------
+                                 enviar_cor_semaforo:
+00009e 93ef                          push ZL
+00009f 93ff                          push ZH
+0000a0 3000                          cpi temp, 0
+0000a1 f029                          breq enviar_vermelho
+0000a2 3001                          cpi temp, 1
+0000a3 f031                          breq enviar_amarelo
+0000a4 3002                          cpi temp, 2
+0000a5 f039                          breq enviar_verde
+0000a6 c009                          rjmp fim_enviar_cor
+                                 
+                                 enviar_vermelho:
+0000a7 e9e2                          ldi ZL, low(2*msg_vermelho)
+0000a8 e0f1                          ldi ZH, high(2*msg_vermelho)
+0000a9 c005                          rjmp enviar_cor
+                                 
+                                 enviar_amarelo:
+0000aa e9ec                          ldi ZL, low(2*msg_amarelo)
+0000ab e0f1                          ldi ZH, high(2*msg_amarelo)
+0000ac c002                          rjmp enviar_cor
+                                 
+                                 enviar_verde:
+0000ad eae4                          ldi ZL, low(2*msg_verde)
+0000ae e0f1                          ldi ZH, high(2*msg_verde)
+                                 
+                                 enviar_cor:
+0000af dfbd                          rcall uart_send_string
+                                 
+                                 fim_enviar_cor:
+0000b0 91ff                          pop ZH
+0000b1 91ef                          pop ZL
+0000b2 9508                          ret
+                                 
+                                 ;----------------------------------------
+                                 ; Strings na memória flash
+                                 ;----------------------------------------
+0000b3 5453
+0000b4 5441
+0000b5 5355
+0000b6 203a
+c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm(247): warning: .cseg .db misalignment - padding zero byte
+0000b7 0000                      msg_inicio:     .db "STATUS: ", 0
+0000b8 7250
+0000b9 6961
+0000ba 2d61
+c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm(248): warning: .cseg .db misalignment - padding zero byte
+0000bb 0000                      msg_praia:      .db "Praia-", 0
+0000bc 7c20
+0000bd 4520
+0000be 2d4a
+c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm(249): warning: .cseg .db misalignment - padding zero byte
+0000bf 0000                      msg_esqjati:    .db " | EJ-", 0
+0000c0 7c20
+0000c1 4420
+0000c2 2d4a
+c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm(250): warning: .cseg .db misalignment - padding zero byte
+0000c3 0000                      msg_dirjati:    .db " | DJ-", 0
+0000c4 7c20
+0000c5 5020
+0000c6 6a61
+0000c7 2d75
+c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm(251): warning: .cseg .db misalignment - padding zero byte
+0000c8 0000                      msg_paju:       .db " | Paju-", 0
+0000c9 6556
+0000ca 6d72
+0000cb 6c65
+0000cc 6f68
+c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm(252): warning: .cseg .db misalignment - padding zero byte
+0000cd 0000                      msg_vermelho:   .db "Vermelho", 0
+0000ce 6d41
+0000cf 7261
+0000d0 6c65
+0000d1 006f                      msg_amarelo:    .db "Amarelo", 0
+0000d2 6556
+0000d3 6472
+0000d4 0065                      msg_verde:      .db "Verde", 0
+                                 
+                                 ;----------------------------------------
+                                 ; ISR Timer1 - decrementar tempos
                                  ;----------------------------------------
                                  timer1_isr:
-000032 951a                          dec count
-000033 f424                          brge continue_timer   ; se >=0, continua
-000034 e019                          ldi count, 9          ; unidade reinicia
-000035 952a                          dec tens
-000036 f40c                          brge continue_timer
-000037 e029                          ldi tens, 9           ; dezena reinicia se passar de 0
-                                 continue_timer:
-000038 9518                          reti
+0000d5 d007                      	rcall decrementar_sem_praia
+0000d6 d03b                      	rcall decrementar_sem_esqjati
+0000d7 d05e                      	rcall decrementar_sem_dirjati
+0000d8 d081                      	rcall decrementar_sem_paju
+                                     
+                                     ; Seta flag para atualizar serial
+0000d9 e001                          ldi temp, 1
+0000da 9300 0108                     sts flag_atualizar_serial, temp
+0000dc 9518                      	reti
                                  
                                  ;----------------------------------------
-                                 ; Multiplexação dos displays
+                                 ; Rotinas de decremento (mantidas iguais)
+                                 ;----------------------------------------
+                                 decrementar_sem_praia:
+0000dd 9100 0101                 	lds temp, tempo_praia
+0000df 950a                      	dec temp
+0000e0 9300 0101                 	sts tempo_praia, temp
+0000e2 f571                      	brne fim_praia
+                                 
+0000e3 9100 0100                 	lds temp, fase_praia
+0000e5 3000                      	cpi temp, 0
+0000e6 f021                      	breq fase_verde_praia
+0000e7 3002                      	cpi temp, 2
+0000e8 f049                      	breq fase_amarela_praia
+0000e9 3001                      	cpi temp, 1
+0000ea f071                      	breq reiniciar_semaforos
+                                 
+                                 fase_verde_praia:
+0000eb e002                          ldi temp, 2
+0000ec 9300 0100                     sts fase_praia, temp
+0000ee e109                          ldi temp, 25
+0000ef 9300 0101                     sts tempo_praia, temp
+0000f1 c01f                          rjmp fim_praia
+                                 
+                                 fase_amarela_praia:
+0000f2 e001                          ldi temp, 1
+0000f3 9300 0100                     sts fase_praia, temp
+0000f5 e004                          ldi temp, 4
+0000f6 9300 0101                     sts tempo_praia, temp
+0000f8 c018                          rjmp fim_praia
+                                 
+                                 reiniciar_semaforos:
+0000f9 e000                          ldi temp, 0
+0000fa 9300 0100                     sts fase_praia, temp
+0000fc e50f                          ldi temp, 95
+0000fd 9300 0101                     sts tempo_praia, temp
+0000ff e000                          ldi temp, 0
+000100 9300 0102                     sts fase_esqjati, temp
+000102 e005                          ldi temp, 5
+000103 9300 0103                     sts tempo_esqjati, temp
+000105 e000                          ldi temp, 0
+000106 9300 0104                     sts fase_dirjati, temp
+000108 e005                          ldi temp, 5
+000109 9300 0105                     sts tempo_dirjati, temp
+00010b e000                          ldi temp, 0
+00010c 9300 0106                     sts fase_paju, temp
+00010e e10f                          ldi temp, 31
+00010f 9300 0107                     sts tempo_paju, temp
+                                 
+                                 fim_praia:
+000111 9508                          ret
+                                 
+                                 decrementar_sem_esqjati:
+000112 9100 0103                 	lds temp, tempo_esqjati
+000114 950a                      	dec temp
+000115 f4e9                      	brne fim_esqjati
+                                 
+000116 9100 0102                 	lds temp, fase_esqjati
+000118 3000                      	cpi temp, 0
+000119 f021                      	breq fase_vermelho_esqjati
+00011a 3002                      	cpi temp, 2
+00011b f049                      	breq fase_amarela_esqjati
+00011c 3001                      	cpi temp, 1
+00011d f071                      	breq fase_verde_esqjati
+                                 
+                                 fase_vermelho_esqjati:
+00011e e002                      	ldi temp, 2
+00011f 9300 0102                 	sts fase_esqjati, temp
+000121 e106                      	ldi temp, 22
+000122 9300 0103                 	sts tempo_esqjati, temp
+000124 c00e                      	rjmp fim_esqjati
+                                 
+                                 fase_amarela_esqjati:
+000125 e001                      	ldi temp, 1
+000126 9300 0102                 	sts fase_esqjati, temp
+000128 e004                      	ldi temp, 4
+000129 9300 0103                 	sts tempo_esqjati, temp
+00012b c007                      	rjmp fim_esqjati
+                                 
+                                 fase_verde_esqjati:
+00012c e000                      	ldi temp, 0
+00012d 9300 0102                 	sts fase_esqjati, temp
+00012f e601                      	ldi temp, 97
+000130 9300 0103                 	sts tempo_esqjati, temp
+000132 c000                      	rjmp fim_esqjati
+                                 
+                                 fim_esqjati:
+000133 9300 0103                 	sts tempo_esqjati, temp
+000135 9508                      	ret
+                                 
+                                 decrementar_sem_dirjati:
+000136 9100 0105                 	lds temp, tempo_dirjati
+000138 950a                      	dec temp
+000139 f4e9                      	brne fim_dirjati
+                                 
+00013a 9100 0104                 	lds temp, fase_dirjati
+00013c 3000                      	cpi temp, 0
+00013d f021                      	breq fase_vermelho_dirjati
+00013e 3002                      	cpi temp, 2
+00013f f049                      	breq fase_amarela_dirjati
+000140 3001                      	cpi temp, 1
+000141 f071                      	breq fase_verde_dirjati
+                                 
+                                 fase_vermelho_dirjati:
+000142 e002                      	ldi temp, 2
+000143 9300 0104                 	sts fase_dirjati, temp
+000145 e506                      	ldi temp,86
+000146 9300 0105                 	sts tempo_dirjati, temp
+000148 c00e                      	rjmp fim_dirjati
+                                 
+                                 fase_amarela_dirjati:
+000149 e001                      	ldi temp, 1
+00014a 9300 0104                 	sts fase_dirjati, temp
+00014c e004                      	ldi temp, 4
+00014d 9300 0105                 	sts tempo_dirjati, temp
+00014f c007                      	rjmp fim_dirjati
+                                 
+                                 fase_verde_dirjati:
+000150 e000                      	ldi temp, 0
+000151 9300 0104                 	sts fase_dirjati, temp
+000153 e201                      	ldi temp, 33
+000154 9300 0105                 	sts tempo_dirjati, temp
+000156 c000                      	rjmp fim_dirjati
+                                 
+                                 fim_dirjati:
+000157 9300 0105                 	sts tempo_dirjati, temp
+000159 9508                      	ret
+                                 
+                                 decrementar_sem_paju:
+00015a 9100 0107                 	lds temp, tempo_paju
+00015c 950a                      	dec temp
+00015d f4e9                      	brne fim_paju
+                                 
+00015e 9100 0106                 	lds temp, fase_paju
+000160 3000                      	cpi temp, 0
+000161 f021                      	breq fase_vermelho_paju
+000162 3002                      	cpi temp, 2
+000163 f049                      	breq fase_amarela_paju
+000164 3001                      	cpi temp, 1
+000165 f071                      	breq fase_verde_paju
+                                 
+                                 fase_vermelho_paju:
+000166 e002                      	ldi temp, 2
+000167 9300 0106                 	sts fase_paju, temp
+000169 e30c                      	ldi temp, 60
+00016a 9300 0107                 	sts tempo_paju, temp
+00016c c00e                      	rjmp fim_paju
+                                 
+                                 fase_amarela_paju:
+00016d e001                      	ldi temp, 1
+00016e 9300 0106                 	sts fase_paju, temp
+000170 e004                      	ldi temp, 4
+000171 9300 0107                 	sts tempo_paju, temp
+000173 c007                      	rjmp fim_paju
+                                 
+                                 fase_verde_paju:
+000174 e000                      	ldi temp, 0
+000175 9300 0106                 	sts fase_paju, temp
+000177 e307                      	ldi temp, 55
+000178 9300 0107                 	sts tempo_paju, temp
+00017a c000                      	rjmp fim_paju
+                                 
+                                 fim_paju:
+00017b 9300 0107                 	sts tempo_paju, temp
+00017d 9508                      	ret
+                                 
+                                 ;----------------------------------------
+                                 ; Multiplexação (mantida igual)
                                  ;----------------------------------------
                                  multiplex:
-000039 d00b                      	rcall semaforo
-                                     ; Exibe unidade
-00003a 9828                          cbi PORTB, PB0       ; desliga dezena
-00003b 9a29                          sbi PORTB, PB1       ; liga unidade
-00003c 2f01                          mov temp, count
-00003d b908                          out PORTC, temp
-00003e d019                          rcall delay5ms
+00017e d005                      	rcall mostrar_display
+00017f d018                      	rcall semaforo_praia
+000180 d02c                      	rcall semaforo_esqjati
+000181 d040                      	rcall semaforo_dirjati
+000182 d054                      	rcall semaforo_paju
+000183 9508                      	ret
                                  
-                                     ; Exibe dezena
-00003f 9829                          cbi PORTB, PB1       ; desliga unidade
-000040 9a28                          sbi PORTB, PB0       ; liga dezena
-000041 2f02                          mov temp, tens
-000042 b908                          out PORTC, temp
-000043 d014                          rcall delay5ms
+                                 mostrar_display:
+000184 9100 0101                 	lds temp, tempo_praia
+000186 2722                      	clr tens
+                                 div_loop:
+000187 300a                      	cpi temp,10
+000188 f018                      	brlo fim_div
+000189 500a                      	subi temp, 10
+00018a 9523                      	inc tens
+00018b cffb                      	rjmp div_loop
                                  
-000044 cff4                          rjmp multiplex
+                                 fim_div:
+00018c 2f10                      	mov count, temp
                                  
-                                 ;----------------------------------------
-                                 ; Controle do semáforo
-                                 ;----------------------------------------
-                                 semaforo:
-                                     ; Intervalos baseados na contagem total (tens:count)
-                                     ; Aqui usei só a dezena para simplificar
-000045 2f02                          mov temp, tens        
+00018d 9828                          cbi PORTB, PB0
+00018e 9a29                          sbi PORTB, PB1
+00018f 2f01                          mov temp, count
+000190 b908                          out PORTC, temp
+000191 d05a                          rcall delay5ms
                                  
-                                     ; Vermelho: quando dezena >= 7
-000046 3007                          cpi temp, 7
-000047 f41c                          brge luz_vermelha
+000192 9829                          cbi PORTB, PB1
+000193 9a28                          sbi PORTB, PB0
+000194 2f02                          mov temp, tens
+000195 b908                          out PORTC, temp
+000196 d055                          rcall delay5ms
+000197 9508                      	ret
                                  
-                                     ; Amarelo: quando dezena entre 5 e 6
-000048 3005                          cpi temp, 5
-000049 f42c                          brge luz_amarela
+                                 semaforo_praia:
+000198 9100 0100                     lds temp, fase_praia
+00019a 3000                      	cpi temp, 0
+00019b f029                      	breq luz_vermelho_praia
+00019c 3001                      	cpi temp, 1
+00019d f039                      	breq luz_amarela_praia
+00019e 3002                      	cpi temp, 2
+00019f f049                      	breq luz_verde_praia
+0001a0 9508                      	ret
                                  
-                                     ; Verde: quando dezena < 5
-00004a c008                          rjmp luz_verde
+                                 luz_vermelho_praia:
+0001a1 9a2a                          sbi PORTB, PB2
+0001a2 982b                          cbi PORTB, PB3
+0001a3 982c                          cbi PORTB, PB4
+0001a4 9508                          ret
                                  
-                                 luz_vermelha:
-00004b 9a2a                          sbi PORTB, PB2   ; acende vermelho
-00004c 982b                          cbi PORTB, PB3   ; apaga amarelo
-00004d 982c                          cbi PORTB, PB4   ; apaga verde
-00004e c008                          rjmp fim_semaforo
+                                 luz_amarela_praia:
+0001a5 982a                          cbi PORTB, PB2
+0001a6 9a2b                          sbi PORTB, PB3
+0001a7 982c                          cbi PORTB, PB4
+0001a8 9508                          ret
                                  
-                                 luz_amarela:
-00004f 982a                          cbi PORTB, PB2
-000050 9a2b                          sbi PORTB, PB3
-000051 982c                          cbi PORTB, PB4
-000052 c004                          rjmp fim_semaforo
+                                 luz_verde_praia:
+0001a9 982a                          cbi PORTB, PB2
+0001aa 982b                          cbi PORTB, PB3
+0001ab 9a2c                          sbi PORTB, PB4
+0001ac 9508                          ret
                                  
-                                 luz_verde:
-000053 982a                          cbi PORTB, PB2
-000054 982b                          cbi PORTB, PB3
-000055 9a2c                          sbi PORTB, PB4
-000056 c000                          rjmp fim_semaforo
+                                 semaforo_esqjati:
+0001ad 9100 0102                     lds temp, fase_esqjati
+0001af 3000                      	cpi temp, 0
+0001b0 f029                      	breq luz_vermelho_esqjati
+0001b1 3001                      	cpi temp, 1
+0001b2 f039                      	breq luz_amarela_esqjati
+0001b3 3002                      	cpi temp, 2
+0001b4 f049                      	breq luz_verde_esqjati
+0001b5 9508                      	ret
                                  
-                                 fim_semaforo:
-000057 9508                          ret
+                                 luz_vermelho_esqjati:
+0001b6 9a5d                          sbi PORTD, PD5
+0001b7 985e                          cbi PORTD, PD6
+0001b8 985f                          cbi PORTD, PD7
+0001b9 9508                          ret
                                  
-                                 ;----------------------------------------
-                                 ; Delay ~5 ms (ajustar conforme clock)
-                                 ;----------------------------------------
+                                 luz_amarela_esqjati:
+0001ba 985d                          cbi PORTD, PD5
+0001bb 9a5e                          sbi PORTD, PD6
+0001bc 985f                          cbi PORTD, PD7
+0001bd 9508                          ret
+                                 
+                                 luz_verde_esqjati:
+0001be 985d                          cbi PORTD, PD5
+0001bf 985e                          cbi PORTD, PD6
+0001c0 9a5f                          sbi PORTD, PD7
+0001c1 9508                          ret
+                                 
+                                 semaforo_dirjati:
+0001c2 9100 0104                     lds temp, fase_dirjati
+0001c4 3000                      	cpi temp, 0
+0001c5 f029                      	breq luz_vermelho_dirjati
+0001c6 3001                      	cpi temp, 1
+0001c7 f039                      	breq luz_amarela_dirjati
+0001c8 3002                      	cpi temp, 2
+0001c9 f049                      	breq luz_verde_dirjati
+0001ca 9508                      	ret
+                                 
+                                 luz_vermelho_dirjati:
+0001cb 9a5a                          sbi PORTD, PD2
+0001cc 985b                          cbi PORTD, PD3
+0001cd 985c                          cbi PORTD, PD4
+0001ce 9508                          ret
+                                 
+                                 luz_amarela_dirjati:
+0001cf 985a                          cbi PORTD, PD2
+0001d0 9a5b                          sbi PORTD, PD3
+0001d1 985c                          cbi PORTD, PD4
+0001d2 9508                          ret
+                                 
+                                 luz_verde_dirjati:
+0001d3 985a                          cbi PORTD, PD2
+0001d4 985b                          cbi PORTD, PD3
+0001d5 9a5c                          sbi PORTD, PD4
+0001d6 9508                          ret
+                                 
+                                 semaforo_paju:
+0001d7 9100 0106                     lds temp, fase_paju
+0001d9 3000                      	cpi temp, 0
+0001da f029                      	breq luz_vermelho_paju
+0001db 3001                      	cpi temp, 1
+0001dc f039                      	breq luz_amarela_paju
+0001dd 3002                      	cpi temp, 2
+0001de f049                      	breq luz_verde_paju
+0001df 9508                      	ret
+                                 
+                                 luz_vermelho_paju:
+0001e0 9a2d                          sbi PORTB, PB5
+0001e1 982e                          cbi PORTB, PB6
+0001e2 982f                          cbi PORTB, PB7
+0001e3 9508                          ret
+                                 
+                                 luz_amarela_paju:
+0001e4 982d                          cbi PORTB, PB5
+0001e5 9a2e                          sbi PORTB, PB6
+0001e6 982f                          cbi PORTB, PB7
+0001e7 9508                          ret
+                                 
+                                 luz_verde_paju:
+0001e8 982d                          cbi PORTB, PB5
+0001e9 982e                          cbi PORTB, PB6
+0001ea 9a2f                          sbi PORTB, PB7
+0001eb 9508                          ret
+                                 
                                  delay5ms:
-000058 e342                          ldi r20, 50
+0001ec 933f                      	push r19
+0001ed 934f                      	push r20
+0001ee e332                          ldi r19, 50
                                  d5_loop1:
-000059 ec58                          ldi r21, 200
+0001ef ec48                          ldi r20, 200
                                  d5_loop2:
-00005a 955a                          dec r21
-00005b f7f1                          brne d5_loop2
-00005c 954a                          dec r20
-00005d f7d9                          brne d5_loop1
-00005e 9508                          ret
+0001f0 954a                          dec r20
+0001f1 f7f1                          brne d5_loop2
+0001f2 953a                          dec r19
+0001f3 f7d9                          brne d5_loop1
+0001f4 914f                      	pop r20
+0001f5 913f                      	pop r19
 
 
 RESOURCE USE INFORMATION
@@ -1140,40 +1630,40 @@ counted separately from r26..r31 here.
 .dseg memory usage only counts static data declared with .byte
 
 "ATmega328P" register use summary:
-x  :   0 y  :   0 z  :   0 r0 :   0 r1 :   0 r2 :   0 r3 :   0 r4 :   0 
+x  :   0 y  :   0 z  :   1 r0 :   0 r1 :   0 r2 :   0 r3 :   0 r4 :   0 
 r5 :   0 r6 :   0 r7 :   0 r8 :   0 r9 :   0 r10:   0 r11:   0 r12:   0 
-r13:   0 r14:   0 r15:   0 r16:  25 r17:   4 r18:   5 r19:   0 r20:   2 
-r21:   2 r22:   0 r23:   0 r24:   0 r25:   0 r26:   0 r27:   0 r28:   0 
-r29:   0 r30:   0 r31:   0 
-Registers used: 5 out of 35 (14.3%)
+r13:   0 r14:   0 r15:   0 r16: 175 r17:   2 r18:   3 r19:  13 r20:   4 
+r21:   0 r22:   0 r23:   0 r24:   0 r25:   0 r26:   0 r27:   0 r28:   0 
+r29:   0 r30:  14 r31:  14 
+Registers used: 8 out of 35 (22.9%)
 
 "ATmega328P" instruction use summary:
 .lds  :   0 .sts  :   0 adc   :   0 add   :   0 adiw  :   0 and   :   0 
 andi  :   0 asr   :   0 bclr  :   0 bld   :   0 brbc  :   0 brbs  :   0 
-brcc  :   0 brcs  :   0 break :   0 breq  :   0 brge  :   4 brhc  :   0 
-brhs  :   0 brid  :   0 brie  :   0 brlo  :   0 brlt  :   0 brmi  :   0 
-brne  :   2 brpl  :   0 brsh  :   0 brtc  :   0 brts  :   0 brvc  :   0 
-brvs  :   0 bset  :   0 bst   :   0 call  :   0 cbi   :   8 cbr   :   0 
-clc   :   0 clh   :   0 cli   :   0 cln   :   0 clr   :   0 cls   :   0 
+brcc  :   0 brcs  :   0 break :   0 breq  :  28 brge  :   0 brhc  :   0 
+brhs  :   0 brid  :   0 brie  :   0 brlo  :   1 brlt  :   0 brmi  :   0 
+brne  :   7 brpl  :   0 brsh  :   0 brtc  :   0 brts  :   0 brvc  :   0 
+brvs  :   0 bset  :   0 bst   :   0 call  :   0 cbi   :  26 cbr   :   0 
+clc   :   0 clh   :   0 cli   :   0 cln   :   0 clr   :   1 cls   :   0 
 clt   :   0 clv   :   0 clz   :   0 com   :   0 cp    :   0 cpc   :   0 
-cpi   :   2 cpse  :   0 dec   :   4 eor   :   0 fmul  :   0 fmuls :   0 
-fmulsu:   0 icall :   0 ijmp  :   0 in    :   0 inc   :   0 jmp   :   0 
-ld    :   0 ldd   :   0 ldi   :  15 lds   :   0 lpm   :   0 lsl   :   0 
-lsr   :   0 mov   :   3 movw  :   0 mul   :   0 muls  :   0 mulsu :   0 
-neg   :   0 nop   :   0 or    :   0 ori   :   0 out   :   6 pop   :   0 
-push  :   0 rcall :   3 ret   :   2 reti  :   1 rjmp  :   8 rol   :   0 
-ror   :   0 sbc   :   0 sbci  :   0 sbi   :   5 sbic  :   0 sbis  :   0 
-sbiw  :   0 sbr   :   0 sbrc  :   0 sbrs  :   0 sec   :   0 seh   :   0 
+cpi   :  30 cpse  :   0 dec   :   6 eor   :   0 fmul  :   0 fmuls :   0 
+fmulsu:   0 icall :   0 ijmp  :   0 in    :   0 inc   :   1 jmp   :   0 
+ld    :   0 ldd   :   0 ldi   :  75 lds   :  19 lpm   :   1 lsl   :   0 
+lsr   :   0 mov   :   4 movw  :   0 mul   :   0 muls  :   0 mulsu :   0 
+neg   :   0 nop   :   0 or    :   0 ori   :   0 out   :   7 pop   :  10 
+push  :  10 rcall :  27 ret   :  28 reti  :   1 rjmp  :  20 rol   :   0 
+ror   :   0 sbc   :   0 sbci  :   0 sbi   :  14 sbic  :   0 sbis  :   0 
+sbiw  :   0 sbr   :   0 sbrc  :   0 sbrs  :   1 sec   :   0 seh   :   0 
 sei   :   1 sen   :   0 ser   :   0 ses   :   0 set   :   0 sev   :   0 
-sez   :   0 sleep :   0 spm   :   0 st    :   0 std   :   0 sts   :   5 
-sub   :   0 subi  :   0 swap  :   0 tst   :   0 wdr   :   0 
-Instructions used: 15 out of 113 (13.3%)
+sez   :   0 sleep :   0 spm   :   0 st    :   0 std   :   0 sts   :  55 
+sub   :   0 subi  :   1 swap  :   0 tst   :   0 wdr   :   0 
+Instructions used: 24 out of 113 (21.2%)
 
 "ATmega328P" memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x0000be    148      0    148   32768   0.5%
-[.dseg] 0x000100 0x000100      0      0      0    2048   0.0%
+[.cseg] 0x000000 0x0003ee    896     68    964   32768   2.9%
+[.dseg] 0x000100 0x000109      0      9      9    2048   0.4%
 [.eseg] 0x000000 0x000000      0      0      0    1024   0.0%
 
-Assembly complete, 0 errors, 0 warnings
+Assembly complete, 0 errors, 6 warnings
