@@ -250,8 +250,8 @@
 
 <item itemtype="Connector" uid="Connector-472" startpinid="Resistor-268-lPin" endpinid="mega328-5-PORTB5" pointList="592,712,592,512,696,512,696,612,688,612" />
 
-<item itemtype="Connector" uid="Connector-473" startpinid="Resistor-269-lPin" endpinid="mega328-5-PORTB6" pointList="588,736,588,604,640,604" />
+<item itemtype="Connector" uid="Connector-481" startpinid="Resistor-269-lPin" endpinid="mega328-5-PORTC4" pointList="588,736,588,500,700,500,700,548,688,548" />
 
-<item itemtype="Connector" uid="Connector-474" startpinid="Resistor-267-lPin" endpinid="mega328-5-PORTB7" pointList="584,760,584,612,640,612" />
+<item itemtype="Connector" uid="Connector-482" startpinid="Resistor-267-lPin" endpinid="mega328-5-PORTC5" pointList="584,760,584,492,708,492,708,540,688,540" />
 
 </circuit>

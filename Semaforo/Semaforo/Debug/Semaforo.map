@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.2.8  c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm Mon Sep 29 06:40:26 2025
+AVRASM ver. 2.2.8  C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm Sun Oct 12 18:31:47 2025
 
 
 EQU  SIGNATURE_000 0000001e
@@ -698,6 +698,7 @@ EQU  INT_VECTORS_SIZE 00000034
 DEF  temp         r16
 DEF  count        r17
 DEF  tens         r18
+DEF  temp_reg     r20
 CSEG reset        00000017
 CSEG timer1_isr   000000d5
 DSEG fase_praia   00000100
@@ -754,24 +755,24 @@ CSEG fase_vermelho_paju 00000166
 CSEG fase_amarela_paju 0000016d
 CSEG fase_verde_paju 00000174
 CSEG mostrar_display 00000184
-CSEG semaforo_praia 00000198
-CSEG semaforo_esqjati 000001ad
-CSEG semaforo_dirjati 000001c2
-CSEG semaforo_paju 000001d7
+CSEG semaforo_praia 0000019c
+CSEG semaforo_esqjati 000001b1
+CSEG semaforo_dirjati 000001c6
+CSEG semaforo_paju 000001db
 CSEG div_loop     00000187
 CSEG fim_div      0000018c
-CSEG delay5ms     000001ec
-CSEG luz_vermelho_praia 000001a1
-CSEG luz_amarela_praia 000001a5
-CSEG luz_verde_praia 000001a9
-CSEG luz_vermelho_esqjati 000001b6
-CSEG luz_amarela_esqjati 000001ba
-CSEG luz_verde_esqjati 000001be
-CSEG luz_vermelho_dirjati 000001cb
-CSEG luz_amarela_dirjati 000001cf
-CSEG luz_verde_dirjati 000001d3
-CSEG luz_vermelho_paju 000001e0
-CSEG luz_amarela_paju 000001e4
-CSEG luz_verde_paju 000001e8
-CSEG d5_loop1     000001ef
-CSEG d5_loop2     000001f0
+CSEG delay5ms     000001f0
+CSEG luz_vermelho_praia 000001a5
+CSEG luz_amarela_praia 000001a9
+CSEG luz_verde_praia 000001ad
+CSEG luz_vermelho_esqjati 000001ba
+CSEG luz_amarela_esqjati 000001be
+CSEG luz_verde_esqjati 000001c2
+CSEG luz_vermelho_dirjati 000001cf
+CSEG luz_amarela_dirjati 000001d3
+CSEG luz_verde_dirjati 000001d7
+CSEG luz_vermelho_paju 000001e4
+CSEG luz_amarela_paju 000001e8
+CSEG luz_verde_paju 000001ec
+CSEG d5_loop1     000001f3
+CSEG d5_loop2     000001f4

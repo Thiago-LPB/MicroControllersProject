@@ -1,10 +1,10 @@
 
-AVRASM ver. 2.2.8  c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm Mon Sep 29 06:40:26 2025
+AVRASM ver. 2.2.8  C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm Sun Oct 12 18:31:47 2025
 
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328Pdef.inc'
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328Pdef.inc'
                                  
-                                 .def temp  = r16
+                                 ;--------------------------------------------------------------------------------
                                  
                                  ;***** Created: 2011-02-09 12:03 ******* Source: ATmega328P.xml **********
                                  ;*************************************************************************
@@ -985,230 +985,271 @@ AVRASM ver. 2.2.8  c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\
                                  
                                  ; ***** END OF FILE ******************************************************
                                  
-                                 .def count = r17			; unidade
-                                 .def tens  = r18			; dezena
+                                 ; DEFINIÇÕES DE REGISTRADORES
+                                 ;--------------------------------------------------------------------------------
                                  
+                                 .def temp  = r16			;Registrador temporário
+                                 .def count = r17			;Unidade
+                                 .def tens  = r18			;Dezena
+                                 .def temp_reg = r20			;Registrador temporário auxiliar, usado em operações de I/O 
+                                 ;--------------------------------------------------------------------------------
+                                 ; SEGMENTO DE CÓDIGO (Memória FLASH)
+                                 ;--------------------------------------------------------------------------------
                                  .cseg
-                                 .org 0x0000
-000000 c016                          rjmp reset
-                                 .org 0x0016
-000016 c0be                          rjmp timer1_isr    ; vetor Timer1 Compare A
+                                 .org 0x0000					; Define a posição original do código na memória Flash (endereço 0)
+000000 c016                          rjmp reset				; Instrução de salto relativo para a rotina de inicialização (reset)
+                                 
+                                 ; VETOR DE INTERRUPÇÃO DO TIMER1
+                                 .org 0x0016				; Define a posição do vetor de interrupção para "Timer1"
+000016 c0be                          rjmp timer1_isr		; Quando a interrupção do Timer1 ocorrer, o programa pulará para a rotina 'timer1_isr'.
                                  
                                  ;----------------------------------------
                                  ; Memória SRAM para semáforos
                                  ;----------------------------------------
+                                 ; A diretiva .dseg inicia a definição de variáveis que serão armazenadas na memória RAM (SRAM)
                                  .dseg
-000100                           fase_praia: .byte 1
-000101                           tempo_praia: .byte 1
+000100                           fase_praia: .byte 1		; Variável de 1 byte para armazenar a fase atual do semáforo da Praia (0=vermelho, 1=amarelo, 2=verde)
+000101                           tempo_praia: .byte 1	; Variável de 1 byte para armazenar o tempo restante da fase atual do semáforo da Praia
                                  
-000102                           fase_esqjati: .byte 1
-000103                           tempo_esqjati: .byte 1
+000102                           fase_esqjati: .byte 1	; Variável para a fase do semáforo Esquerda Jatiúca
+000103                           tempo_esqjati: .byte 1	; Variável para o tempo do semáforo Esquerda Jatiúca
                                  
-000104                           fase_dirjati: .byte 1
-000105                           tempo_dirjati: .byte 1
+000104                           fase_dirjati: .byte 1	; Variável para a fase do semáforo Direita Jatiúca
+000105                           tempo_dirjati: .byte 1	; Variável para o tempo do semáforo Direita Jatiúca
                                  
-000106                           fase_paju: .byte 1
-000107                           tempo_paju: .byte 1
+000106                           fase_paju: .byte 1		; Variável para a fase do semáforo Pajuçara
+000107                           tempo_paju: .byte 1		; Variável para o tempo do semáforo Pajuçara
                                  
-000108                           flag_atualizar_serial: .byte 1  ; flag para enviar status
+000108                           flag_atualizar_serial: .byte 1  ; flag para enviar status 
+                                 								; 1= enviar, 0= não enviar
                                  
+                                 ;--------------------------------------------------------------------------------
+                                 ; INÍCIO DO CÓDIGO EXECUTÁVEL
+                                 ;--------------------------------------------------------------------------------
                                  .cseg
-                                 ;----------------------------------------
+                                 
                                  reset:
-                                     ; Inicializa stack
-000017 ef0f                          ldi temp, low(RAMEND)
-000018 bf0d                          out SPL, temp
-000019 e008                          ldi temp, high(RAMEND)
-00001a bf0e                          out SPH, temp
+                                     ; --- Inicialização do Stack Pointer (Ponteiro da Pilha) ---
+000017 ef0f                          ldi temp, low(RAMEND)	; Carrega a parte baixa do endereço final da RAM em 'temp'
+000018 bf0d                          out SPL, temp			; Escreve no registrador Stack Pointer Low (SPL)
+000019 e008                          ldi temp, high(RAMEND)	; Carrega a parte alta do endereço final da RAM em 'temp'
+00001a bf0e                          out SPH, temp			; Escreve no registrador Stack Pointer High (SPH)
                                  
-                                     ; Configura UART (9600 baud @ 16MHz)
-00001b d03b                          rcall uart_init
+                                     ; --- Inicialização da Comunicação Serial (UART) ---
+00001b d03b                          rcall uart_init			; Chama a sub-rotina para configurar a UART com 9600 baud rate
                                  
-                                     ; Configura PORTC C0–C3 como saída (BCD)
-00001c e00f                          ldi temp, 0x0F
+                                 	; --- Configuração das Portas de Saída (LEDs e Displays) ---
+                                     ; Configura os pinos do PORTC (PC0-PC5) como saída
+                                     ; PC0-PC3 são para os dados BCD do display de 7 segmentos
+                                     ; PC4-PC5 são para LEDs do semáforo da Pajuçara
+00001c e30f                          ldi temp, (1<<PC0)|(1<<PC1)|(1<<PC2)|(1<<PC3)|(1<<PC4)|(1<<PC5)
 00001d b907                          out DDRC, temp
                                  
-                                     ; Configura PORTB0 e PORTB1 como saída (TIP122)
-00001e ef0f                          ldi temp, (1<<PB0)|(1<<PB1)|(1<<PB2)|(1<<PB3)|(1<<PB4)|(1<<PB5)|(1<<PB6)|(1<<PB7)
+                                     ; Configura os pinos do PORTB (PB0-PB5) como saída
+                                     ; PB0-PB1 controlam a multiplexação dos displays (via transistores TIP122)
+                                     ; PB2-PB4 controlam os LEDs do semáforo da Praia
+                                     ; PB5 controla um LED do semáforo da Pajuçara
+00001e e30f                          ldi temp, (1<<PB0)|(1<<PB1)|(1<<PB2)|(1<<PB3)|(1<<PB4)|(1<<PB5)
 00001f b904                          out DDRB, temp
                                  
+                                 	; Configura os pinos do PORTD (PD2-PD7) como saída para os LEDs dos outros semáforos
 000020 ef0c                      	ldi temp, (1<<PD2)|(1<<PD3)|(1<<PD4)|(1<<PD5)|(1<<PD6)|(1<<PD7)
 000021 b90a                      	out DDRD, temp
                                  
-                                 	; Inicia semáforos todos no vermelho
+                                 	; --- Inicialização dos Estados e Tempos dos Semáforos ---
+                                 	; Define o estado inicial de cada semáforo
+                                     ; Todos começam no vermelho (fase 0) com seus respectivos tempos de contagem
 000022 e000                      	ldi temp, 0
-000023 9300 0100                 	sts fase_praia, temp
-000025 e50f                      	ldi temp, 95
-000026 9300 0101                 	sts tempo_praia, temp
+000023 9300 0100                 	sts fase_praia, temp	; Define a fase inicial da Praia como Vermelho (0)
+000025 e50f                      	ldi temp, 95			
+000026 9300 0101                 	sts tempo_praia, temp	; Define o tempo inicial da Praia.
                                  
 000028 e000                      	ldi temp, 0
-000029 9300 0102                 	sts fase_esqjati, temp
+000029 9300 0102                 	sts fase_esqjati, temp	; Define a fase inicial de Esq. Jatiúca como Vermelho (0)
 00002b e005                      	ldi temp, 5
-00002c 9300 0103                 	sts tempo_esqjati, temp
+00002c 9300 0103                 	sts tempo_esqjati, temp	; Define o tempo inicial
                                  
 00002e e000                      	ldi temp, 0
-00002f 9300 0104                 	sts fase_dirjati, temp
+00002f 9300 0104                 	sts fase_dirjati, temp	; Define a fase inicial de Dir. Jatiúca como Vermelho (0)
 000031 e005                      	ldi temp, 5
-000032 9300 0105                 	sts tempo_dirjati, temp
+000032 9300 0105                 	sts tempo_dirjati, temp	; Define o tempo inicial
                                  
 000034 e000                      	ldi temp, 0
-000035 9300 0106                 	sts fase_paju, temp
+000035 9300 0106                 	sts fase_paju, temp		; Define a fase inicial de Pajuçara como Vermelho (0)
 000037 e10f                      	ldi temp, 31
-000038 9300 0107                 	sts tempo_paju, temp
+000038 9300 0107                 	sts tempo_paju, temp	; Define o tempo inicial
                                  
+                                 	; Zera a flag de atualização da serial no início
 00003a e000                          ldi temp, 0
 00003b 9300 0108                     sts flag_atualizar_serial, temp
                                  
-                                     ; Configura Timer1 para 1 Hz (CTC)
+                                     ; --- Configuração do Timer1 para gerar uma interrupção a cada 1 segundo (1 Hz) ---
+                                     ; Modo CTC (Clear Timer on Compare Match): O timer conta até o valor em OCR1A e então reinicia
 00003d e008                          ldi temp, (1<<WGM12)
-00003e 9300 0081                     sts TCCR1B, temp
+00003e 9300 0081                     sts TCCR1B, temp	; Configura o modo CTC no registrador de controle B
                                  
+                                 	; Define o valor de comparação para gerar a interrupção em 1 Hz
+                                     ; Cálculo: (F_CPU / Prescaler) / F_interrupção = (16,000,000 / 1024) / 1 Hz = 15625
+                                     ; Como a contagem vai de 0 a 15624, o valor a ser carregado é 15624
 000040 e30d                          ldi temp, high(15624)
-000041 9300 0089                     sts OCR1AH, temp
+000041 9300 0089                     sts OCR1AH, temp		; Carrega a parte alta do valor de comparação
 000043 e008                          ldi temp, low(15624)
-000044 9300 0088                     sts OCR1AL, temp
+000044 9300 0088                     sts OCR1AL, temp		; Carrega a parte baixa do valor de comparação
                                  
+                                 	; Configura o prescaler (divisor de clock) para 1024 e ativa o modo CTC
+                                     ; O prescaler reduz a velocidade do clock do timer, permitindo contar intervalos mais longos
 000046 e00d                          ldi temp, (1<<CS12)|(1<<CS10)|(1<<WGM12)
 000047 9300 0081                     sts TCCR1B, temp
                                  
+                                 	; Habilita a interrupção de comparação do canal A do Timer1
 000049 e002                          ldi temp, (1<<OCIE1A)
 00004a 9300 006f                     sts TIMSK1, temp
                                  
-00004c 9478                          sei
+                                 	; --- Habilitação Global de Interrupções ---
+00004c 9478                          sei						; Seta o bit 'I' no SREG, permitindo que as interrupções ocorram
                                  
+                                 
+                                 ;--------------------------------------------------------------------------------
+                                 ; LOOP PRINCIPAL
+                                 ;--------------------------------------------------------------------------------
                                  main_lp:
-                                     ; Verifica se precisa enviar status
-00004d 9100 0108                     lds temp, flag_atualizar_serial
-00004f 3001                          cpi temp, 1
-000050 f421                          brne continua_main
-000051 d028                          rcall enviar_status_serial
+                                     ; Verifica se a rotina de interrupção do timer sinalizou para enviar o status
+00004d 9100 0108                     lds temp, flag_atualizar_serial	; Carrega o valor da flag para o registrador 'temp'
+00004f 3001                          cpi temp, 1						; Compara o valor com 1
+000050 f421                          brne continua_main				; Se não for igual a 1, pula para 'continua_main'
+                                    
+                                    ; Se a flag for 1, envia o status e reseta a flag.
+000051 d028                          rcall enviar_status_serial		; Chama a rotina que envia o status pela UART
 000052 e000                          ldi temp, 0
-000053 9300 0108                     sts flag_atualizar_serial, temp
+000053 9300 0108                     sts flag_atualizar_serial, temp	; Zera a flag para evitar envios repetidos
                                  
                                  continua_main:
-000055 d128                          rcall multiplex
-000056 cff6                          rjmp main_lp
+000055 d128                          rcall multiplex					; Chama a rotina que atualiza os displays e os LEDs dos semáforos
+000056 cff6                          rjmp main_lp					; Salta de volta para o início do loop, criando um ciclo infinito.
                                  
-                                 ;----------------------------------------
-                                 ; Inicializa UART - 9600 baud @ 16MHz
-                                 ;----------------------------------------
+                                 ;--------------------------------------------------------------------------------
+                                 ; ROTINAS DE COMUNICAÇÃO SERIAL (UART)
+                                 ;--------------------------------------------------------------------------------
+                                 
+                                 ; --- Inicializa a UART ---
+                                 ; Configura a comunicação serial para 9600 bits por segundo (baud rate) com um clock de 16MHz
                                  uart_init:
-                                     ; UBRR = 103 para 9600 baud @ 16MHz
+                                     ; O valor de UBRR (USART Baud Rate Register) é calculado para a taxa desejada
+                                     ; Para 9600 baud @ 16MHz, UBRR = 103
 000057 e000                          ldi temp, 0
-000058 9300 00c5                     sts UBRR0H, temp
+000058 9300 00c5                     sts UBRR0H, temp	; Parte alta do UBRR (zerada para 103)
 00005a e607                          ldi temp, 103
-00005b 9300 00c4                     sts UBRR0L, temp
+00005b 9300 00c4                     sts UBRR0L, temp	; Parte baixa do UBRR	
                                      
-                                     ; Habilita transmissão
+                                     ; Habilita o transmissor (TXEN0)
 00005d e008                          ldi temp, (1<<TXEN0)
 00005e 9300 00c1                     sts UCSR0B, temp
                                      
-                                     ; 8 bits, 1 stop bit, sem paridade
+                                     ; Configura o formato do frame: 8 bits de dados, 1 stop bit, sem paridade
 000060 e006                          ldi temp, (1<<UCSZ01)|(1<<UCSZ00)
 000061 9300 00c2                     sts UCSR0C, temp
-000063 9508                          ret
+000063 9508                          ret					; Retorna da sub-rotina
                                  
-                                 ;----------------------------------------
-                                 ; Transmite um byte via UART
-                                 ;----------------------------------------
+                                 ; --- Transmite um único byte via UART ---
+                                 ; O byte a ser enviado deve estar no registrador 'temp'
                                  uart_transmit:
-000064 933f                          push r19
+000064 933f                          push r19				; Salva r19 na pilha para não perder seu valor.
                                  uart_wait:
-000065 9130 00c0                     lds r19, UCSR0A
-000067 ff35                          sbrs r19, UDRE0
-000068 cffc                          rjmp uart_wait
-000069 9300 00c6                     sts UDR0, temp
-00006b 913f                          pop r19
-00006c 9508                          ret
+000065 9130 00c0                     lds r19, UCSR0A			; Lê o registrador de status A da UART
+000067 ff35                          sbrs r19, UDRE0			; Testa o bit UDRE0 (USART Data Register Empty). Pula a próxima instrução se o bit estiver setado
+000068 cffc                          rjmp uart_wait			; Se o buffer de transmissão não estiver vazio, fica em loop esperando
+000069 9300 00c6                     sts UDR0, temp			; Quando o buffer estiver vazio, escreve o byte de 'temp' para transmissão
+00006b 913f                          pop r19					; Restaura o valor original de r19 da pilha
+00006c 9508                          ret						; Retorna da sub-rotina
                                  
-                                 ;----------------------------------------
-                                 ; Envia string via UART (Z aponta para string na flash)
-                                 ;----------------------------------------
+                                 ; --- Envia uma string armazenada na memória Flash via UART ---
+                                 ; O endereço da string deve estar no ponteiro Z (registradores ZH:ZL)
                                  uart_send_string:
-00006d 933f                          push r19
+00006d 933f                          push r19				; Salva registradores que serão usados na rotina.
 00006e 93ef                          push ZL
 00006f 93ff                          push ZH
                                  uart_str_loop:
-000070 9135                          lpm r19, Z+
-000071 3030                          cpi r19, 0
-000072 f019                          breq uart_str_end
-000073 2f03                          mov temp, r19
-000074 dfef                          rcall uart_transmit
-000075 cffa                          rjmp uart_str_loop
+000070 9135                          lpm r19, Z+                     ; Carrega um byte da memória de programa (Flash) para r19 e incrementa o ponteiro Z
+000071 3030                          cpi r19, 0                      ; Compara o byte carregado com 0 (caractere nulo, fim da string)
+000072 f019                          breq uart_str_end               ; Se for igual a zero, salta para o final
+000073 2f03                          mov temp, r19                   ; Move o caractere para 'temp' para ser enviado
+000074 dfef                          rcall uart_transmit             ; Chama a rotina de transmissão
+000075 cffa                          rjmp uart_str_loop              ; Volta para o início do loop para pegar o próximo caractere
                                  uart_str_end:
-000076 91ff                          pop ZH
+000076 91ff                          pop ZH							; Restaura os valores dos registradores da pilha
 000077 91ef                          pop ZL
 000078 913f                          pop r19
 000079 9508                          ret
                                  
-                                 ;----------------------------------------
-                                 ; Envia status de todos os semáforos
-                                 ;----------------------------------------
+                                 ;--------------------------------------------------------------------------------
+                                 ; ROTINAS DE STATUS SERIAL
+                                 ;--------------------------------------------------------------------------------
+                                 
+                                 ; --- Envia o status completo de todos os semáforos via serial ---
                                  enviar_status_serial:
-00007a 93ef                          push ZL
+00007a 93ef                          push ZL							; Salva o ponteiro Z
 00007b 93ff                          push ZH
                                      
-                                     ; Cabeçalho
-00007c e6e6                          ldi ZL, low(2*msg_inicio)
-00007d e0f1                          ldi ZH, high(2*msg_inicio)
+                                     ; Envia o cabeçalho "STATUS: "
+00007c e6e6                          ldi ZL, low(2*msg_inicio)       ; Carrega o endereço da string na memória Flash para o ponteiro Z
+00007d e0f1                          ldi ZH, high(2*msg_inicio)      ; O endereço é multiplicado por 2 porque a Flash é endereçada por palavra (2 bytes)
 00007e dfee                          rcall uart_send_string
                                      
-                                     ; Semáforo Praia
+                                     ; Envia o status do Semáforo Praia
 00007f e7e0                          ldi ZL, low(2*msg_praia)
 000080 e0f1                          ldi ZH, high(2*msg_praia)
 000081 dfeb                          rcall uart_send_string
-000082 9100 0100                     lds temp, fase_praia
-000084 d019                          rcall enviar_cor_semaforo
+000082 9100 0100                     lds temp, fase_praia            ; Carrega a fase atual do semáforo
+000084 d019                          rcall enviar_cor_semaforo       ; Chama a rotina para enviar a cor correspondente
                                      
-                                     ; Semáforo Esquerdo Jatiuca
+                                     
+                                     ; Envia o status do Semáforo Esquerdo Jatiúca
 000085 e7e8                          ldi ZL, low(2*msg_esqjati)
 000086 e0f1                          ldi ZH, high(2*msg_esqjati)
 000087 dfe5                          rcall uart_send_string
 000088 9100 0102                     lds temp, fase_esqjati
 00008a d013                          rcall enviar_cor_semaforo
                                      
-                                     ; Semáforo Direito Jatiuca
+                                     ; Envia o status do Semáforo Direito Jatiúca
 00008b e8e0                          ldi ZL, low(2*msg_dirjati)
 00008c e0f1                          ldi ZH, high(2*msg_dirjati)
 00008d dfdf                          rcall uart_send_string
 00008e 9100 0104                     lds temp, fase_dirjati
 000090 d00d                          rcall enviar_cor_semaforo
                                      
-                                     ; Semáforo Pajuçara
+                                     ; Envia o status do Semáforo Pajuçara
 000091 e8e8                          ldi ZL, low(2*msg_paju)
 000092 e0f1                          ldi ZH, high(2*msg_paju)
 000093 dfd9                          rcall uart_send_string
 000094 9100 0106                     lds temp, fase_paju
 000096 d007                          rcall enviar_cor_semaforo
                                      
-                                     ; Nova linha
-000097 e00d                          ldi temp, 13
-000098 dfcb                          rcall uart_transmit
-000099 e00a                          ldi temp, 10
+                                     ; Envia uma nova linha (CR + LF) para formatar a saída no terminal
+000097 e00d                          ldi temp, 13					; 13 é o código ASCII para Carriage Return (CR)
+000098 dfcb                          rcall uart_transmit				
+000099 e00a                          ldi temp, 10					; 10 é o código ASCII para Line Feed (LF)
 00009a dfc9                          rcall uart_transmit
                                      
-00009b 91ff                          pop ZH
+00009b 91ff                          pop ZH							; Restaura o ponteiro Z
 00009c 91ef                          pop ZL
 00009d 9508                          ret
                                  
-                                 ;----------------------------------------
-                                 ; Envia cor do semáforo baseado na fase
-                                 ;----------------------------------------
+                                 ; --- Envia a string da cor do semáforo (Vermelho, Amarelo, Verde) baseado no valor em 'temp' ---
                                  enviar_cor_semaforo:
 00009e 93ef                          push ZL
 00009f 93ff                          push ZH
-0000a0 3000                          cpi temp, 0
-0000a1 f029                          breq enviar_vermelho
-0000a2 3001                          cpi temp, 1
+0000a0 3000                          cpi temp, 0					; Compara a fase com 0 (Vermelho)
+0000a1 f029                          breq enviar_vermelho		
+0000a2 3001                          cpi temp, 1					; Compara a fase com 1 (Amarelo)
 0000a3 f031                          breq enviar_amarelo
-0000a4 3002                          cpi temp, 2
+0000a4 3002                          cpi temp, 2					; Compara a fase com 2 (Verde)
 0000a5 f039                          breq enviar_verde
-0000a6 c009                          rjmp fim_enviar_cor
+0000a6 c009                          rjmp fim_enviar_cor			; Se não for nenhum dos valores esperados, apenas retorna
                                  
                                  enviar_vermelho:
 0000a7 e9e2                          ldi ZL, low(2*msg_vermelho)
 0000a8 e0f1                          ldi ZH, high(2*msg_vermelho)
-0000a9 c005                          rjmp enviar_cor
+0000a9 c005                          rjmp enviar_cor				; Pula para a rotina que envia a string
                                  
                                  enviar_amarelo:
 0000aa e9ec                          ldi ZL, low(2*msg_amarelo)
@@ -1220,48 +1261,49 @@ AVRASM ver. 2.2.8  c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\
 0000ae e0f1                          ldi ZH, high(2*msg_verde)
                                  
                                  enviar_cor:
-0000af dfbd                          rcall uart_send_string
+0000af dfbd                          rcall uart_send_string		; Chama a rotina para enviar a string apontada por Z
                                  
                                  fim_enviar_cor:
 0000b0 91ff                          pop ZH
 0000b1 91ef                          pop ZL
 0000b2 9508                          ret
                                  
-                                 ;----------------------------------------
-                                 ; Strings na memória flash
-                                 ;----------------------------------------
+                                 ;--------------------------------------------------------------------------------
+                                 ; DADOS NA MEMÓRIA FLASH (Strings)
+                                 ;--------------------------------------------------------------------------------
+                                 ; A diretiva .db (define byte) armazena dados constantes na memória de programa
 0000b3 5453
 0000b4 5441
 0000b5 5355
 0000b6 203a
-c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm(247): warning: .cseg .db misalignment - padding zero byte
+C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm(289): warning: .cseg .db misalignment - padding zero byte
 0000b7 0000                      msg_inicio:     .db "STATUS: ", 0
 0000b8 7250
 0000b9 6961
 0000ba 2d61
-c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm(248): warning: .cseg .db misalignment - padding zero byte
+C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm(290): warning: .cseg .db misalignment - padding zero byte
 0000bb 0000                      msg_praia:      .db "Praia-", 0
 0000bc 7c20
 0000bd 4520
 0000be 2d4a
-c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm(249): warning: .cseg .db misalignment - padding zero byte
+C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm(291): warning: .cseg .db misalignment - padding zero byte
 0000bf 0000                      msg_esqjati:    .db " | EJ-", 0
 0000c0 7c20
 0000c1 4420
 0000c2 2d4a
-c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm(250): warning: .cseg .db misalignment - padding zero byte
+C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm(292): warning: .cseg .db misalignment - padding zero byte
 0000c3 0000                      msg_dirjati:    .db " | DJ-", 0
 0000c4 7c20
 0000c5 5020
 0000c6 6a61
 0000c7 2d75
-c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm(251): warning: .cseg .db misalignment - padding zero byte
+C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm(293): warning: .cseg .db misalignment - padding zero byte
 0000c8 0000                      msg_paju:       .db " | Paju-", 0
 0000c9 6556
 0000ca 6d72
 0000cb 6c65
 0000cc 6f68
-c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm(252): warning: .cseg .db misalignment - padding zero byte
+C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm(294): warning: .cseg .db misalignment - padding zero byte
 0000cd 0000                      msg_vermelho:   .db "Vermelho", 0
 0000ce 6d41
 0000cf 7261
@@ -1271,52 +1313,58 @@ c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm(252): warn
 0000d3 6472
 0000d4 0065                      msg_verde:      .db "Verde", 0
                                  
-                                 ;----------------------------------------
-                                 ; ISR Timer1 - decrementar tempos
-                                 ;----------------------------------------
+                                 ;--------------------------------------------------------------------------------
+                                 ; ROTINA DE SERVIÇO DE INTERRUPÇÃO (ISR) DO TIMER1
+                                 ;--------------------------------------------------------------------------------
+                                 ; Esta rotina é executada automaticamente uma vez por segundo
                                  timer1_isr:
+                                 	; Chama as rotinas para decrementar o tempo de cada semáforo e tratar a mudança de fase
 0000d5 d007                      	rcall decrementar_sem_praia
 0000d6 d03b                      	rcall decrementar_sem_esqjati
 0000d7 d05e                      	rcall decrementar_sem_dirjati
 0000d8 d081                      	rcall decrementar_sem_paju
                                      
-                                     ; Seta flag para atualizar serial
+                                     ; Sinaliza para o loop principal que o status deve ser enviado pela serial
 0000d9 e001                          ldi temp, 1
 0000da 9300 0108                     sts flag_atualizar_serial, temp
-0000dc 9518                      	reti
+0000dc 9518                      	reti			; Retorno da interrupção. Esta instrução também reabilita as interrupções globais
                                  
-                                 ;----------------------------------------
-                                 ; Rotinas de decremento (mantidas iguais)
-                                 ;----------------------------------------
+                                 ;--------------------------------------------------------------------------------
+                                 ; ROTINAS DE LÓGICA DOS SEMÁFOROS (Máquinas de Estado)
+                                 ;--------------------------------------------------------------------------------
+                                 ; --- Lógica para o Semáforo da Praia ---
                                  decrementar_sem_praia:
-0000dd 9100 0101                 	lds temp, tempo_praia
-0000df 950a                      	dec temp
-0000e0 9300 0101                 	sts tempo_praia, temp
-0000e2 f571                      	brne fim_praia
+0000dd 9100 0101                 	lds temp, tempo_praia           ; Carrega o tempo atual
+0000df 950a                          dec temp                        ; Decrementa o tempo
+0000e0 9300 0101                     sts tempo_praia, temp           ; Salva o novo tempo
+0000e2 f571                          brne fim_praia                  ; Se o tempo não chegou a zero, retorna
                                  
-0000e3 9100 0100                 	lds temp, fase_praia
-0000e5 3000                      	cpi temp, 0
-0000e6 f021                      	breq fase_verde_praia
-0000e7 3002                      	cpi temp, 2
-0000e8 f049                      	breq fase_amarela_praia
-0000e9 3001                      	cpi temp, 1
-0000ea f071                      	breq reiniciar_semaforos
+                                 	; Se o tempo zerou, muda a fase do semáforo
+0000e3 9100 0100                 	lds temp, fase_praia            ; Carrega a fase atual
+0000e5 3000                          cpi temp, 0                     ; Se estava no VERMELHO (0)...
+0000e6 f021                          breq fase_verde_praia           ; ...muda para VERDE
+0000e7 3002                          cpi temp, 2                     ; Se estava no VERDE (2)...
+0000e8 f049                          breq fase_amarela_praia         ; ...muda para AMARELO
+0000e9 3001                          cpi temp, 1                     ; Se estava no AMARELO (1)...
+0000ea f071                          breq reiniciar_semaforos        ; ...muda para VERMELHO e reinicia todo o ciclo
                                  
                                  fase_verde_praia:
-0000eb e002                          ldi temp, 2
+0000eb e002                          ldi temp, 2                     ; Define a nova fase como VERDE (2)
 0000ec 9300 0100                     sts fase_praia, temp
-0000ee e109                          ldi temp, 25
+0000ee e109                          ldi temp, 25                    ; Carrega o tempo para a fase verde
 0000ef 9300 0101                     sts tempo_praia, temp
 0000f1 c01f                          rjmp fim_praia
                                  
                                  fase_amarela_praia:
-0000f2 e001                          ldi temp, 1
+0000f2 e001                          ldi temp, 1                     ; Define a nova fase como AMARELO (1)
 0000f3 9300 0100                     sts fase_praia, temp
-0000f5 e004                          ldi temp, 4
+0000f5 e004                          ldi temp, 4                     ; Carrega o tempo para a fase amarela
 0000f6 9300 0101                     sts tempo_praia, temp
 0000f8 c018                          rjmp fim_praia
                                  
                                  reiniciar_semaforos:
+                                 ; Esta rotina reseta todos os semáforos para seus estados e tempos iniciais,
+                                     ; reiniciando o ciclo de tráfego completo
 0000f9 e000                          ldi temp, 0
 0000fa 9300 0100                     sts fase_praia, temp
 0000fc e50f                          ldi temp, 95
@@ -1336,45 +1384,48 @@ c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm(252): warn
                                  
                                  fim_praia:
 000111 9508                          ret
-                                 
+                                 ; --- Lógica para o Semáforo Esquerda Jatiúca ---
                                  decrementar_sem_esqjati:
 000112 9100 0103                 	lds temp, tempo_esqjati
 000114 950a                      	dec temp
-000115 f4e9                      	brne fim_esqjati
+000115 f4e9                      	brne fim_esqjati			; Se o tempo não zerou, salva e retorna
                                  
+                                 	; Se o tempo zerou, muda a fase
 000116 9100 0102                 	lds temp, fase_esqjati
-000118 3000                      	cpi temp, 0
-000119 f021                      	breq fase_vermelho_esqjati
-00011a 3002                      	cpi temp, 2
-00011b f049                      	breq fase_amarela_esqjati
-00011c 3001                      	cpi temp, 1
-00011d f071                      	breq fase_verde_esqjati
+000118 3000                      	cpi temp, 0                     ; Se estava VERMELHO (0)...
+000119 f021                          breq fase_vermelho_esqjati      ; ...muda para VERDE
+00011a 3002                          cpi temp, 2                     ; Se estava VERDE (2)...
+00011b f049                          breq fase_amarela_esqjati       ; ...muda para AMARELO.
+00011c 3001                          cpi temp, 1                     ; Se estava AMARELO (1)...
+00011d f071                          breq fase_verde_esqjati         ; ...muda para VERMELHO
                                  
                                  fase_vermelho_esqjati:
-00011e e002                      	ldi temp, 2
-00011f 9300 0102                 	sts fase_esqjati, temp
-000121 e106                      	ldi temp, 22
-000122 9300 0103                 	sts tempo_esqjati, temp
-000124 c00e                      	rjmp fim_esqjati
+00011e e002                      	ldi temp, 2                     ; Define a nova fase como VERDE (2)
+00011f 9300 0102                     sts fase_esqjati, temp
+000121 e106                          ldi temp, 22                    ; Carrega tempo da fase verde
+000122 9300 0103                     sts tempo_esqjati, temp
+000124 c00e                          rjmp fim_esqjati
                                  
                                  fase_amarela_esqjati:
-000125 e001                      	ldi temp, 1
-000126 9300 0102                 	sts fase_esqjati, temp
-000128 e004                      	ldi temp, 4
-000129 9300 0103                 	sts tempo_esqjati, temp
-00012b c007                      	rjmp fim_esqjati
+000125 e001                      	ldi temp, 1                     ; Define a nova fase como AMARELO (1)
+000126 9300 0102                     sts fase_esqjati, temp
+000128 e004                          ldi temp, 4                     ; Carrega tempo da fase amarela
+000129 9300 0103                     sts tempo_esqjati, temp
+00012b c007                          rjmp fim_esqjati
                                  
                                  fase_verde_esqjati:
-00012c e000                      	ldi temp, 0
-00012d 9300 0102                 	sts fase_esqjati, temp
-00012f e601                      	ldi temp, 97
-000130 9300 0103                 	sts tempo_esqjati, temp
-000132 c000                      	rjmp fim_esqjati
+00012c e000                      	 ldi temp, 0                     ; Define a nova fase como VERMELHO (0)
+00012d 9300 0102                     sts fase_esqjati, temp
+00012f e601                          ldi temp, 97                    ; Carrega tempo da fase vermelha
+000130 9300 0103                     sts tempo_esqjati, temp
+000132 c000                          rjmp fim_esqjati
                                  
                                  fim_esqjati:
-000133 9300 0103                 	sts tempo_esqjati, temp
+000133 9300 0103                 	sts tempo_esqjati, temp			; Salva o tempo (seja o decrementado ou o novo da fase)
 000135 9508                      	ret
                                  
+                                 ; --- Lógica para o Semáforo Direita Jatiúca ---
+                                 ; A lógica é similar à do semáforo anterior
                                  decrementar_sem_dirjati:
 000136 9100 0105                 	lds temp, tempo_dirjati
 000138 950a                      	dec temp
@@ -1413,6 +1464,8 @@ c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm(252): warn
 000157 9300 0105                 	sts tempo_dirjati, temp
 000159 9508                      	ret
                                  
+                                 ; --- Lógica para o Semáforo Pajuçara ---
+                                 ; A lógica é similar à dos semáforos anteriores
                                  decrementar_sem_paju:
 00015a 9100 0107                 	lds temp, tempo_paju
 00015c 950a                      	dec temp
@@ -1451,168 +1504,196 @@ c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm(252): warn
 00017b 9300 0107                 	sts tempo_paju, temp
 00017d 9508                      	ret
                                  
-                                 ;----------------------------------------
-                                 ; Multiplexação (mantida igual)
-                                 ;----------------------------------------
+                                 ;--------------------------------------------------------------------------------
+                                 ; ROTINAS DE CONTROLE DOS DISPLAYS E LEDS
+                                 ;--------------------------------------------------------------------------------
+                                 
+                                 ; --- Rotina principal de Multiplexação ---
+                                 ; Chama todas as sub-rotinas que atualizam os componentes visuais
                                  multiplex:
 00017e d005                      	rcall mostrar_display
-00017f d018                      	rcall semaforo_praia
-000180 d02c                      	rcall semaforo_esqjati
-000181 d040                      	rcall semaforo_dirjati
-000182 d054                      	rcall semaforo_paju
+00017f d01c                      	rcall semaforo_praia
+000180 d030                      	rcall semaforo_esqjati
+000181 d044                      	rcall semaforo_dirjati
+000182 d058                      	rcall semaforo_paju
 000183 9508                      	ret
                                  
+                                 ; --- Atualiza o display de 7 segmentos ---
+                                 ; Mostra o tempo do semáforo da Praia em dois displays de 7 segmentos
                                  mostrar_display:
-000184 9100 0101                 	lds temp, tempo_praia
-000186 2722                      	clr tens
+000184 9100 0101                 	lds temp, tempo_praia           ; Carrega o tempo do semáforo da Praia
+000186 2722                          clr tens                        ; Zera o registrador da dezena
+                                 
+                                 ; Loop para separar o número em dezenas e unidades
                                  div_loop:
-000187 300a                      	cpi temp,10
-000188 f018                      	brlo fim_div
-000189 500a                      	subi temp, 10
-00018a 9523                      	inc tens
-00018b cffb                      	rjmp div_loop
+000187 300a                      	cpi temp, 10                    ; Compara o tempo com 10
+000188 f018                          brlo fim_div                    ; Se for menor, o que sobrou é a unidade
+000189 500a                          subi temp, 10                   ; Subtrai 10 do tempo
+00018a 9523                          inc tens                        ; Incrementa o contador de dezenas
+00018b cffb                          rjmp div_loop                   ; Repete o processo
                                  
                                  fim_div:
-00018c 2f10                      	mov count, temp
+00018c 2f10                      	mov count, temp					; O resto da divisão é a unidade
                                  
-00018d 9828                          cbi PORTB, PB0
-00018e 9a29                          sbi PORTB, PB1
-00018f 2f01                          mov temp, count
-000190 b908                          out PORTC, temp
-000191 d05a                          rcall delay5ms
+                                 	 ; --- Lógica de Multiplexação ---
+                                     ; Acende um display de cada vez, muito rapidamente, para criar a ilusão
+                                     ; de que ambos estão acesos ao mesmo tempo (Persistência da Visão)
                                  
-000192 9829                          cbi PORTB, PB1
-000193 9a28                          sbi PORTB, PB0
-000194 2f02                          mov temp, tens
-000195 b908                          out PORTC, temp
-000196 d055                          rcall delay5ms
-000197 9508                      	ret
+                                 	; Mostra o dígito da UNIDADE
+00018d b148                      	in temp_reg, PORTC              ; Lê o estado atual do PORTC
+00018e 7f40                          andi temp_reg, 0b11110000       ; Zera os 4 bits inferiores (PC0-PC3), preservando os superiores
+00018f 2b41                          or temp_reg, count              ; Combina com o valor da unidade
+000190 b948                          out PORTC, temp_reg             ; Envia o valor BCD da unidade para o display
+000191 9828                          cbi PORTB, PB0                  ; Desliga o display da dezena (GND no transistor)
+000192 9a29                          sbi PORTB, PB1                  ; Liga o display da unidade (GND no transistor)
+000193 d05c                          rcall delay5ms                  ; Pequeno atraso para o dígito ser visível
                                  
+                                 
+                                 	; Mostra o dígito da DEZENA
+000194 b148                      	in temp_reg, PORTC              ; Lê o estado atual do PORTC novamente
+000195 7f40                          andi temp_reg, 0b11110000       ; Zera os 4 bits inferiores
+000196 2b42                          or temp_reg, tens               ; Combina com o valor da dezena
+000197 b948                          out PORTC, temp_reg             ; Envia o valor BCD da dezena para o display
+000198 9829                          cbi PORTB, PB1                  ; Desliga o display da unidade
+000199 9a28                          sbi PORTB, PB0                  ; Liga o display da dezena
+00019a d055                          rcall delay5ms                  ; Pequeno atraso
+00019b 9508                          ret
+                                 
+                                 ; --- Acende os LEDs do Semáforo da Praia ---
                                  semaforo_praia:
-000198 9100 0100                     lds temp, fase_praia
-00019a 3000                      	cpi temp, 0
-00019b f029                      	breq luz_vermelho_praia
-00019c 3001                      	cpi temp, 1
-00019d f039                      	breq luz_amarela_praia
-00019e 3002                      	cpi temp, 2
-00019f f049                      	breq luz_verde_praia
-0001a0 9508                      	ret
+00019c 9100 0100                     lds temp, fase_praia			; Carrega a fase atual
+00019e 3000                      	cpi temp, 0
+00019f f029                      	breq luz_vermelho_praia
+0001a0 3001                      	cpi temp, 1
+0001a1 f039                      	breq luz_amarela_praia
+0001a2 3002                      	cpi temp, 2
+0001a3 f049                      	breq luz_verde_praia
+0001a4 9508                      	ret
                                  
                                  luz_vermelho_praia:
-0001a1 9a2a                          sbi PORTB, PB2
-0001a2 982b                          cbi PORTB, PB3
-0001a3 982c                          cbi PORTB, PB4
-0001a4 9508                          ret
-                                 
-                                 luz_amarela_praia:
-0001a5 982a                          cbi PORTB, PB2
-0001a6 9a2b                          sbi PORTB, PB3
-0001a7 982c                          cbi PORTB, PB4
+0001a5 9a2a                          sbi PORTB, PB2                  ; Acende LED Vermelho (PB2)
+0001a6 982b                          cbi PORTB, PB3                  ; Apaga LED Amarelo (PB3)
+0001a7 982c                          cbi PORTB, PB4                  ; Apaga LED Verde (PB4)
 0001a8 9508                          ret
                                  
-                                 luz_verde_praia:
+                                 luz_amarela_praia:
 0001a9 982a                          cbi PORTB, PB2
-0001aa 982b                          cbi PORTB, PB3
-0001ab 9a2c                          sbi PORTB, PB4
+0001aa 9a2b                          sbi PORTB, PB3					; Acende LED Amarelo
+0001ab 982c                          cbi PORTB, PB4
 0001ac 9508                          ret
                                  
+                                 luz_verde_praia:
+0001ad 982a                          cbi PORTB, PB2
+0001ae 982b                          cbi PORTB, PB3
+0001af 9a2c                          sbi PORTB, PB4					; Acende LED Verde
+0001b0 9508                          ret
+                                 
+                                 
+                                 ; --- Acende os LEDs do Semáforo Esquerda Jatiúca ---
                                  semaforo_esqjati:
-0001ad 9100 0102                     lds temp, fase_esqjati
-0001af 3000                      	cpi temp, 0
-0001b0 f029                      	breq luz_vermelho_esqjati
-0001b1 3001                      	cpi temp, 1
-0001b2 f039                      	breq luz_amarela_esqjati
-0001b3 3002                      	cpi temp, 2
-0001b4 f049                      	breq luz_verde_esqjati
-0001b5 9508                      	ret
+0001b1 9100 0102                     lds temp, fase_esqjati
+0001b3 3000                      	cpi temp, 0
+0001b4 f029                      	breq luz_vermelho_esqjati
+0001b5 3001                      	cpi temp, 1
+0001b6 f039                      	breq luz_amarela_esqjati
+0001b7 3002                      	cpi temp, 2
+0001b8 f049                      	breq luz_verde_esqjati
+0001b9 9508                      	ret
                                  
                                  luz_vermelho_esqjati:
-0001b6 9a5d                          sbi PORTD, PD5
-0001b7 985e                          cbi PORTD, PD6
-0001b8 985f                          cbi PORTD, PD7
-0001b9 9508                          ret
-                                 
-                                 luz_amarela_esqjati:
-0001ba 985d                          cbi PORTD, PD5
-0001bb 9a5e                          sbi PORTD, PD6
+0001ba 9a5d                          sbi PORTD, PD5					; Acende LED Vermelho (PD5)
+0001bb 985e                          cbi PORTD, PD6
 0001bc 985f                          cbi PORTD, PD7
 0001bd 9508                          ret
                                  
-                                 luz_verde_esqjati:
+                                 luz_amarela_esqjati:
 0001be 985d                          cbi PORTD, PD5
-0001bf 985e                          cbi PORTD, PD6
-0001c0 9a5f                          sbi PORTD, PD7
+0001bf 9a5e                          sbi PORTD, PD6					; Acende LED Amarelo (PD6)
+0001c0 985f                          cbi PORTD, PD7
 0001c1 9508                          ret
                                  
+                                 luz_verde_esqjati:
+0001c2 985d                          cbi PORTD, PD5
+0001c3 985e                          cbi PORTD, PD6
+0001c4 9a5f                          sbi PORTD, PD7					; Acende LED Verde (PD7)
+0001c5 9508                          ret
+                                 
+                                 
+                                 ; --- Acende os LEDs do Semáforo Direita Jatiúca ---
                                  semaforo_dirjati:
-0001c2 9100 0104                     lds temp, fase_dirjati
-0001c4 3000                      	cpi temp, 0
-0001c5 f029                      	breq luz_vermelho_dirjati
-0001c6 3001                      	cpi temp, 1
-0001c7 f039                      	breq luz_amarela_dirjati
-0001c8 3002                      	cpi temp, 2
-0001c9 f049                      	breq luz_verde_dirjati
-0001ca 9508                      	ret
+0001c6 9100 0104                     lds temp, fase_dirjati
+0001c8 3000                      	cpi temp, 0
+0001c9 f029                      	breq luz_vermelho_dirjati
+0001ca 3001                      	cpi temp, 1
+0001cb f039                      	breq luz_amarela_dirjati
+0001cc 3002                      	cpi temp, 2
+0001cd f049                      	breq luz_verde_dirjati
+0001ce 9508                      	ret
                                  
                                  luz_vermelho_dirjati:
-0001cb 9a5a                          sbi PORTD, PD2
-0001cc 985b                          cbi PORTD, PD3
-0001cd 985c                          cbi PORTD, PD4
-0001ce 9508                          ret
-                                 
-                                 luz_amarela_dirjati:
-0001cf 985a                          cbi PORTD, PD2
-0001d0 9a5b                          sbi PORTD, PD3
+0001cf 9a5a                          sbi PORTD, PD2					 ; Acende LED Vermelho (PD2)
+0001d0 985b                          cbi PORTD, PD3
 0001d1 985c                          cbi PORTD, PD4
 0001d2 9508                          ret
                                  
-                                 luz_verde_dirjati:
+                                 luz_amarela_dirjati:
 0001d3 985a                          cbi PORTD, PD2
-0001d4 985b                          cbi PORTD, PD3
-0001d5 9a5c                          sbi PORTD, PD4
+0001d4 9a5b                          sbi PORTD, PD3					; Acende LED Amarelo (PD3)
+0001d5 985c                          cbi PORTD, PD4
 0001d6 9508                          ret
                                  
+                                 luz_verde_dirjati:
+0001d7 985a                          cbi PORTD, PD2
+0001d8 985b                          cbi PORTD, PD3
+0001d9 9a5c                          sbi PORTD, PD4					; Acende LED Verde (PD4)
+0001da 9508                          ret
+                                 
                                  semaforo_paju:
-0001d7 9100 0106                     lds temp, fase_paju
-0001d9 3000                      	cpi temp, 0
-0001da f029                      	breq luz_vermelho_paju
-0001db 3001                      	cpi temp, 1
-0001dc f039                      	breq luz_amarela_paju
-0001dd 3002                      	cpi temp, 2
-0001de f049                      	breq luz_verde_paju
-0001df 9508                      	ret
+0001db 9100 0106                     lds temp, fase_paju
+0001dd 3000                      	cpi temp, 0
+0001de f029                      	breq luz_vermelho_paju
+0001df 3001                      	cpi temp, 1
+0001e0 f039                      	breq luz_amarela_paju
+0001e1 3002                      	cpi temp, 2
+0001e2 f049                      	breq luz_verde_paju
+0001e3 9508                      	ret
                                  
                                  luz_vermelho_paju:
-0001e0 9a2d                          sbi PORTB, PB5
-0001e1 982e                          cbi PORTB, PB6
-0001e2 982f                          cbi PORTB, PB7
-0001e3 9508                          ret
-                                 
-                                 luz_amarela_paju:
-0001e4 982d                          cbi PORTB, PB5
-0001e5 9a2e                          sbi PORTB, PB6
-0001e6 982f                          cbi PORTB, PB7
+0001e4 9a2d                          sbi PORTB, PB5					; Acende LED Vermelho (PB5)
+0001e5 9844                          cbi PORTC, PC4
+0001e6 9845                          cbi PORTC, PC5
 0001e7 9508                          ret
                                  
-                                 luz_verde_paju:
+                                 luz_amarela_paju:
 0001e8 982d                          cbi PORTB, PB5
-0001e9 982e                          cbi PORTB, PB6
-0001ea 9a2f                          sbi PORTB, PB7
+0001e9 9a44                          sbi PORTC, PC4					; Acende LED Amarelo (PC4).
+0001ea 9845                          cbi PORTC, PC5
 0001eb 9508                          ret
                                  
+                                 luz_verde_paju:
+0001ec 982d                          cbi PORTB, PB5
+0001ed 9844                          cbi PORTC, PC4
+0001ee 9a45                          sbi PORTC, PC5					 ; Acende LED Verde (PC5)
+0001ef 9508                          ret
+                                 
+                                 
+                                 ;--------------------------------------------------------------------------------
+                                 ; ROTINA DE DELAY (ATRASO)
+                                 ;--------------------------------------------------------------------------------
+                                 ; Cria um atraso de aproximadamente 5 milissegundos (software delay)
                                  delay5ms:
-0001ec 933f                      	push r19
-0001ed 934f                      	push r20
-0001ee e332                          ldi r19, 50
+0001f0 933f                          push r19                        ; Salva registradores que serão usados
+0001f1 934f                          push r20
+0001f2 e332                          ldi r19, 50                     ; Carrega o contador do loop externo
                                  d5_loop1:
-0001ef ec48                          ldi r20, 200
+0001f3 ec48                          ldi r20, 200                    ; Carrega o contador do loop interno
                                  d5_loop2:
-0001f0 954a                          dec r20
-0001f1 f7f1                          brne d5_loop2
-0001f2 953a                          dec r19
-0001f3 f7d9                          brne d5_loop1
-0001f4 914f                      	pop r20
-0001f5 913f                      	pop r19
+0001f4 954a                          dec r20                         ; Decrementa o contador interno
+0001f5 f7f1                          brne d5_loop2                   ; Repete até r20 ser zero
+0001f6 953a                          dec r19                         ; Decrementa o contador externo
+0001f7 f7d9                          brne d5_loop1                   ; Repete até r19 ser zero
+0001f8 914f                          pop r20                         ; Restaura os registradores
+0001f9 913f                          pop r19
 
 
 RESOURCE USE INFORMATION
@@ -1632,14 +1713,14 @@ counted separately from r26..r31 here.
 "ATmega328P" register use summary:
 x  :   0 y  :   0 z  :   1 r0 :   0 r1 :   0 r2 :   0 r3 :   0 r4 :   0 
 r5 :   0 r6 :   0 r7 :   0 r8 :   0 r9 :   0 r10:   0 r11:   0 r12:   0 
-r13:   0 r14:   0 r15:   0 r16: 175 r17:   2 r18:   3 r19:  13 r20:   4 
+r13:   0 r14:   0 r15:   0 r16: 171 r17:   2 r18:   3 r19:  13 r20:  12 
 r21:   0 r22:   0 r23:   0 r24:   0 r25:   0 r26:   0 r27:   0 r28:   0 
 r29:   0 r30:  14 r31:  14 
 Registers used: 8 out of 35 (22.9%)
 
 "ATmega328P" instruction use summary:
 .lds  :   0 .sts  :   0 adc   :   0 add   :   0 adiw  :   0 and   :   0 
-andi  :   0 asr   :   0 bclr  :   0 bld   :   0 brbc  :   0 brbs  :   0 
+andi  :   2 asr   :   0 bclr  :   0 bld   :   0 brbc  :   0 brbs  :   0 
 brcc  :   0 brcs  :   0 break :   0 breq  :  28 brge  :   0 brhc  :   0 
 brhs  :   0 brid  :   0 brie  :   0 brlo  :   1 brlt  :   0 brmi  :   0 
 brne  :   7 brpl  :   0 brsh  :   0 brtc  :   0 brts  :   0 brvc  :   0 
@@ -1647,22 +1728,22 @@ brvs  :   0 bset  :   0 bst   :   0 call  :   0 cbi   :  26 cbr   :   0
 clc   :   0 clh   :   0 cli   :   0 cln   :   0 clr   :   1 cls   :   0 
 clt   :   0 clv   :   0 clz   :   0 com   :   0 cp    :   0 cpc   :   0 
 cpi   :  30 cpse  :   0 dec   :   6 eor   :   0 fmul  :   0 fmuls :   0 
-fmulsu:   0 icall :   0 ijmp  :   0 in    :   0 inc   :   1 jmp   :   0 
+fmulsu:   0 icall :   0 ijmp  :   0 in    :   2 inc   :   1 jmp   :   0 
 ld    :   0 ldd   :   0 ldi   :  75 lds   :  19 lpm   :   1 lsl   :   0 
-lsr   :   0 mov   :   4 movw  :   0 mul   :   0 muls  :   0 mulsu :   0 
-neg   :   0 nop   :   0 or    :   0 ori   :   0 out   :   7 pop   :  10 
+lsr   :   0 mov   :   2 movw  :   0 mul   :   0 muls  :   0 mulsu :   0 
+neg   :   0 nop   :   0 or    :   2 ori   :   0 out   :   7 pop   :  10 
 push  :  10 rcall :  27 ret   :  28 reti  :   1 rjmp  :  20 rol   :   0 
 ror   :   0 sbc   :   0 sbci  :   0 sbi   :  14 sbic  :   0 sbis  :   0 
 sbiw  :   0 sbr   :   0 sbrc  :   0 sbrs  :   1 sec   :   0 seh   :   0 
 sei   :   1 sen   :   0 ser   :   0 ses   :   0 set   :   0 sev   :   0 
 sez   :   0 sleep :   0 spm   :   0 st    :   0 std   :   0 sts   :  55 
 sub   :   0 subi  :   1 swap  :   0 tst   :   0 wdr   :   0 
-Instructions used: 24 out of 113 (21.2%)
+Instructions used: 27 out of 113 (23.9%)
 
 "ATmega328P" memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x0003ee    896     68    964   32768   2.9%
+[.cseg] 0x000000 0x0003f6    904     68    972   32768   3.0%
 [.dseg] 0x000100 0x000109      0      9      9    2048   0.4%
 [.eseg] 0x000000 0x000000      0      0      0    1024   0.0%
 

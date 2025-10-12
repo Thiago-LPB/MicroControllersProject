@@ -1,18 +1,18 @@
 <ASSEMBLER_INFO>
  <VERSION>2.2.8</VERSION>
  <DEVICE>"ATmega328P"</DEVICE>
- <WORKING_DIR>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\Debug</WORKING_DIR>
+ <WORKING_DIR>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\Debug</WORKING_DIR>
  <INCLUDE_PATH>
   <DIR>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc</DIR>
   <DIR>C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avrassembler\Include</DIR>
   <DIR></DIR>
  </INCLUDE_PATH>
- <SOURCE_FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</SOURCE_FILE>
+ <SOURCE_FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</SOURCE_FILE>
  <INCLUDED_FILES>
   <FILE>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328Pdef.inc</FILE>
  </INCLUDED_FILES>
  <OBJECT_FILES>
-  <FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\Debug\Semaforo.obj</FILE>
+  <FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\Debug\Semaforo.obj</FILE>
  </OBJECT_FILES>
  <HEX_FILES>
   <FILE>Semaforo.hex</FILE>
@@ -22,82 +22,82 @@
   <FILE>Semaforo.lss</FILE>
  </OUTPUT_FILES>
  <LABELS>
-  <reset><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>31</LINE></reset>
-  <timer1_isr><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>259</LINE></timer1_isr>
-  <fase_praia><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>15</LINE></fase_praia>
-  <tempo_praia><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>16</LINE></tempo_praia>
-  <fase_esqjati><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>18</LINE></fase_esqjati>
-  <tempo_esqjati><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>19</LINE></tempo_esqjati>
-  <fase_dirjati><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>21</LINE></fase_dirjati>
-  <tempo_dirjati><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>22</LINE></tempo_dirjati>
-  <fase_paju><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>24</LINE></fase_paju>
-  <tempo_paju><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>25</LINE></tempo_paju>
-  <flag_atualizar_serial><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>27</LINE></flag_atualizar_serial>
-  <uart_init><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>109</LINE></uart_init>
-  <main_lp><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>93</LINE></main_lp>
-  <continua_main><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>102</LINE></continua_main>
-  <enviar_status_serial><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>161</LINE></enviar_status_serial>
-  <multiplex><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>439</LINE></multiplex>
-  <uart_transmit><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>128</LINE></uart_transmit>
-  <uart_wait><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>130</LINE></uart_wait>
-  <uart_send_string><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>141</LINE></uart_send_string>
-  <uart_str_loop><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>145</LINE></uart_str_loop>
-  <uart_str_end><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>152</LINE></uart_str_end>
-  <msg_inicio><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>247</LINE></msg_inicio>
-  <msg_praia><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>248</LINE></msg_praia>
-  <enviar_cor_semaforo><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>211</LINE></enviar_cor_semaforo>
-  <msg_esqjati><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>249</LINE></msg_esqjati>
-  <msg_dirjati><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>250</LINE></msg_dirjati>
-  <msg_paju><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>251</LINE></msg_paju>
-  <enviar_vermelho><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>222</LINE></enviar_vermelho>
-  <enviar_amarelo><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>227</LINE></enviar_amarelo>
-  <enviar_verde><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>232</LINE></enviar_verde>
-  <fim_enviar_cor><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>239</LINE></fim_enviar_cor>
-  <msg_vermelho><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>252</LINE></msg_vermelho>
-  <enviar_cor><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>236</LINE></enviar_cor>
-  <msg_amarelo><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>253</LINE></msg_amarelo>
-  <msg_verde><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>254</LINE></msg_verde>
-  <decrementar_sem_praia><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>273</LINE></decrementar_sem_praia>
-  <decrementar_sem_esqjati><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>322</LINE></decrementar_sem_esqjati>
-  <decrementar_sem_dirjati><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>360</LINE></decrementar_sem_dirjati>
-  <decrementar_sem_paju><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>398</LINE></decrementar_sem_paju>
-  <fim_praia><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>319</LINE></fim_praia>
-  <fase_verde_praia><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>287</LINE></fase_verde_praia>
-  <fase_amarela_praia><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>294</LINE></fase_amarela_praia>
-  <reiniciar_semaforos><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>301</LINE></reiniciar_semaforos>
-  <fim_esqjati><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>356</LINE></fim_esqjati>
-  <fase_vermelho_esqjati><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>335</LINE></fase_vermelho_esqjati>
-  <fase_amarela_esqjati><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>342</LINE></fase_amarela_esqjati>
-  <fase_verde_esqjati><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>349</LINE></fase_verde_esqjati>
-  <fim_dirjati><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>394</LINE></fim_dirjati>
-  <fase_vermelho_dirjati><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>373</LINE></fase_vermelho_dirjati>
-  <fase_amarela_dirjati><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>380</LINE></fase_amarela_dirjati>
-  <fase_verde_dirjati><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>387</LINE></fase_verde_dirjati>
-  <fim_paju><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>432</LINE></fim_paju>
-  <fase_vermelho_paju><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>411</LINE></fase_vermelho_paju>
-  <fase_amarela_paju><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>418</LINE></fase_amarela_paju>
-  <fase_verde_paju><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>425</LINE></fase_verde_paju>
-  <mostrar_display><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>447</LINE></mostrar_display>
-  <semaforo_praia><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>473</LINE></semaforo_praia>
-  <semaforo_esqjati><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>501</LINE></semaforo_esqjati>
-  <semaforo_dirjati><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>529</LINE></semaforo_dirjati>
-  <semaforo_paju><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>557</LINE></semaforo_paju>
-  <div_loop><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>450</LINE></div_loop>
-  <fim_div><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>457</LINE></fim_div>
-  <delay5ms><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>585</LINE></delay5ms>
-  <luz_vermelho_praia><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>483</LINE></luz_vermelho_praia>
-  <luz_amarela_praia><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>489</LINE></luz_amarela_praia>
-  <luz_verde_praia><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>495</LINE></luz_verde_praia>
-  <luz_vermelho_esqjati><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>511</LINE></luz_vermelho_esqjati>
-  <luz_amarela_esqjati><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>517</LINE></luz_amarela_esqjati>
-  <luz_verde_esqjati><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>523</LINE></luz_verde_esqjati>
-  <luz_vermelho_dirjati><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>539</LINE></luz_vermelho_dirjati>
-  <luz_amarela_dirjati><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>545</LINE></luz_amarela_dirjati>
-  <luz_verde_dirjati><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>551</LINE></luz_verde_dirjati>
-  <luz_vermelho_paju><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>567</LINE></luz_vermelho_paju>
-  <luz_amarela_paju><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>573</LINE></luz_amarela_paju>
-  <luz_verde_paju><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>579</LINE></luz_verde_paju>
-  <d5_loop1><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>589</LINE></d5_loop1>
-  <d5_loop2><FILE>c:\users\rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>591</LINE></d5_loop2>
+  <reset><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>45</LINE></reset>
+  <timer1_isr><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>302</LINE></timer1_isr>
+  <fase_praia><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>25</LINE></fase_praia>
+  <tempo_praia><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>26</LINE></tempo_praia>
+  <fase_esqjati><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>28</LINE></fase_esqjati>
+  <tempo_esqjati><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>29</LINE></tempo_esqjati>
+  <fase_dirjati><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>31</LINE></fase_dirjati>
+  <tempo_dirjati><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>32</LINE></tempo_dirjati>
+  <fase_paju><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>34</LINE></fase_paju>
+  <tempo_paju><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>35</LINE></tempo_paju>
+  <flag_atualizar_serial><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>37</LINE></flag_atualizar_serial>
+  <uart_init><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>150</LINE></uart_init>
+  <main_lp><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>129</LINE></main_lp>
+  <continua_main><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>140</LINE></continua_main>
+  <enviar_status_serial><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>203</LINE></enviar_status_serial>
+  <multiplex><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>495</LINE></multiplex>
+  <uart_transmit><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>169</LINE></uart_transmit>
+  <uart_wait><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>171</LINE></uart_wait>
+  <uart_send_string><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>181</LINE></uart_send_string>
+  <uart_str_loop><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>185</LINE></uart_str_loop>
+  <uart_str_end><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>192</LINE></uart_str_end>
+  <msg_inicio><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>289</LINE></msg_inicio>
+  <msg_praia><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>290</LINE></msg_praia>
+  <enviar_cor_semaforo><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>252</LINE></enviar_cor_semaforo>
+  <msg_esqjati><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>291</LINE></msg_esqjati>
+  <msg_dirjati><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>292</LINE></msg_dirjati>
+  <msg_paju><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>293</LINE></msg_paju>
+  <enviar_vermelho><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>263</LINE></enviar_vermelho>
+  <enviar_amarelo><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>268</LINE></enviar_amarelo>
+  <enviar_verde><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>273</LINE></enviar_verde>
+  <fim_enviar_cor><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>280</LINE></fim_enviar_cor>
+  <msg_vermelho><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>294</LINE></msg_vermelho>
+  <enviar_cor><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>277</LINE></enviar_cor>
+  <msg_amarelo><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>295</LINE></msg_amarelo>
+  <msg_verde><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>296</LINE></msg_verde>
+  <decrementar_sem_praia><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>318</LINE></decrementar_sem_praia>
+  <decrementar_sem_esqjati><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>370</LINE></decrementar_sem_esqjati>
+  <decrementar_sem_dirjati><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>411</LINE></decrementar_sem_dirjati>
+  <decrementar_sem_paju><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>451</LINE></decrementar_sem_paju>
+  <fim_praia><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>367</LINE></fim_praia>
+  <fase_verde_praia><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>333</LINE></fase_verde_praia>
+  <fase_amarela_praia><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>340</LINE></fase_amarela_praia>
+  <reiniciar_semaforos><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>347</LINE></reiniciar_semaforos>
+  <fim_esqjati><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>405</LINE></fim_esqjati>
+  <fase_vermelho_esqjati><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>384</LINE></fase_vermelho_esqjati>
+  <fase_amarela_esqjati><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>391</LINE></fase_amarela_esqjati>
+  <fase_verde_esqjati><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>398</LINE></fase_verde_esqjati>
+  <fim_dirjati><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>445</LINE></fim_dirjati>
+  <fase_vermelho_dirjati><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>424</LINE></fase_vermelho_dirjati>
+  <fase_amarela_dirjati><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>431</LINE></fase_amarela_dirjati>
+  <fase_verde_dirjati><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>438</LINE></fase_verde_dirjati>
+  <fim_paju><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>485</LINE></fim_paju>
+  <fase_vermelho_paju><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>464</LINE></fase_vermelho_paju>
+  <fase_amarela_paju><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>471</LINE></fase_amarela_paju>
+  <fase_verde_paju><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>478</LINE></fase_verde_paju>
+  <mostrar_display><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>505</LINE></mostrar_display>
+  <semaforo_praia><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>545</LINE></semaforo_praia>
+  <semaforo_esqjati><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>575</LINE></semaforo_esqjati>
+  <semaforo_dirjati><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>605</LINE></semaforo_dirjati>
+  <semaforo_paju><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>633</LINE></semaforo_paju>
+  <div_loop><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>510</LINE></div_loop>
+  <fim_div><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>517</LINE></fim_div>
+  <delay5ms><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>666</LINE></delay5ms>
+  <luz_vermelho_praia><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>555</LINE></luz_vermelho_praia>
+  <luz_amarela_praia><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>561</LINE></luz_amarela_praia>
+  <luz_verde_praia><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>567</LINE></luz_verde_praia>
+  <luz_vermelho_esqjati><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>585</LINE></luz_vermelho_esqjati>
+  <luz_amarela_esqjati><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>591</LINE></luz_amarela_esqjati>
+  <luz_verde_esqjati><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>597</LINE></luz_verde_esqjati>
+  <luz_vermelho_dirjati><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>615</LINE></luz_vermelho_dirjati>
+  <luz_amarela_dirjati><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>621</LINE></luz_amarela_dirjati>
+  <luz_verde_dirjati><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>627</LINE></luz_verde_dirjati>
+  <luz_vermelho_paju><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>643</LINE></luz_vermelho_paju>
+  <luz_amarela_paju><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>649</LINE></luz_amarela_paju>
+  <luz_verde_paju><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>655</LINE></luz_verde_paju>
+  <d5_loop1><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>670</LINE></d5_loop1>
+  <d5_loop2><FILE>C:\Users\Rafael\Documents\Atmel Studio\7.0\Semaforo\Semaforo\main.asm</FILE><LINE>672</LINE></d5_loop2>
  </LABELS>
 </ASSEMBLER_INFO>
